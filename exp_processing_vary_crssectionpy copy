@@ -1,0 +1,343 @@
+import os
+import matplotlib.pyplot as plt
+from matplotlib import ticker
+from matplotlib.ticker import ScalarFormatter
+from scipy.signal import savgol_filter
+import numpy as np
+import matplotlib.pyplot as plt
+import rawpy
+import cv2
+from scipy.integrate import quad, IntegrationWarning
+import warnings
+import matplotlib.ticker as ticker
+from scipy.signal import savgol_filter
+from matplotlib.ticker import ScalarFormatter
+import os
+from units_constants import *
+# Import the classes
+from image_analysis import (
+    ImagePreprocess,
+    ParametricAnalysis,
+    ConcentrationCalculator,
+)
+
+# SET THE PARAMETERS OF IMAGE
+foldername_img = 'Photos_19-12'
+filename_img_absorption = "_DSC3363.NEF" # зображення з поглинанням
+filename_img_gt = "_DSC3349o.NEF" # ground truth image
+filepath_img_absorption = os.path.join(foldername_img, filename_img_absorption)
+filepath_img_gt =os.path.join(foldername_img, filename_img_gt)
+
+x_min_electrode = 2041 # left lim of electrode
+x_max_electrode = 4154 # right lim of electrode
+
+y_min_electrode = 1078 # lower limit of an electrode
+y_max_electrode = 2999  # upper limit of an electrode
+
+x_minROI = 1743 # Define ROI for preanalysis
+x_maxROI  = 3762
+
+
+# SET THE PARAMETERS OF PLASMA AND LASER
+# Plasma
+mu_Cu = 64  # Atomic mass of copper
+f_ik = 0.00328  # Oscillator strength
+g_i = 6  # Statistical weight for the lower energy level
+E_i = 1.38  # Energy of level in eV
+E_k = 3.82  # Energy of upper level in eV
+# Laser
+lambda_m = 510.5*nm  # Wavelength in meters
+# Folders and profiles
+foldername = 'plots_and_results' 
+filename_statsum = 'Statsum_CuI.txt' # Statistic sum
+filename_temperature = 'temperature_profile.txt' # Temperature profile
+filepath_statsum = os.path.join(foldername, filename_statsum)
+filepath_temperature = os.path.join(foldername, filename_temperature)
+
+y_crssctn = y_min_electrode + (y_max_electrode - y_min_electrode) // 2 
+# Instantiate the class of image preprocess
+preprocess_img_absorption = ImagePreprocess(
+    filepath_img_absorption, x_min_electrode, x_max_electrode, y_min_electrode, y_max_electrode,
+y_crssctn= y_crssctn)
+
+preprocess_img_gt = ImagePreprocess(
+    filepath_img_gt, x_min_electrode, x_max_electrode, y_min_electrode, y_max_electrode,y_crssctn=y_min_electrode + (y_max_electrode - y_min_electrode) // 2 +2
+)
+
+# Find intensity crossection for ROI and y_crssctn
+intensity_crssctn = preprocess_img_absorption.extract_intensity_row(
+    x_min=x_minROI,x_max= x_maxROI, y_crssctn=None
+)
+intensity_crssctn_smoothed = savgol_filter(intensity_crssctn, window_length=51, polyorder=2)  # window_length and polyorder can be adjusted
+
+
+# DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
+fig, [ax1, ax2] = plt.subplots(1, 2)
+ax1.imshow(
+    preprocess_img_absorption.color_rectangle(
+        image_not_cropped=preprocess_img_absorption.grayscale_image
+    ), cmap = 'gray'
+) # Display grayscale image with rectange
+ax1.set_title("Grayscale image")
+ax1.set_xlabel("x [pxl]")
+ax1.set_ylabel("y [pxl]")
+
+ax2.imshow(
+    preprocess_img_absorption.color_rectangle(
+        image_not_cropped=preprocess_img_absorption.edge_detection()
+    ),
+    cmap="gray",
+) # Display edge-detected image
+ax2.set_title("Edge-detected image")
+ax2.set_xlabel("x [pxl]")
+ax2.set_ylabel("y [pxl]")
+
+# DISPLAY GT AND ABSORBTION IMAGE
+fig, [ax1, ax2] = plt.subplots(1, 2)
+ax1.imshow(
+    preprocess_img_gt.color_rectangle(
+        image_not_cropped=preprocess_img_gt.grayscale_image
+    ), cmap = 'gray'
+) # Display grayscale image with rectange
+ax1.set_title("Edge-detected image ground truth")
+ax1.set_xlabel("x [pxl]")
+ax1.set_ylabel("y [pxl]")
+
+ax2.imshow(
+    preprocess_img_absorption.color_rectangle(
+        image_not_cropped=preprocess_img_absorption.grayscale_image
+    ),
+    cmap="gray",
+) # Display edge-detected image
+ax2.set_title("Grayscale image of absorption")
+ax2.set_xlabel("x [pxl]")
+ax2.set_ylabel("y [pxl]")
+
+
+# DISPLAY CROSSECTION ROI AND FULL of GT image and absorbtion
+fig, [ax1, ax2] = plt.subplots(1,2)
+ax1.plot(np.arange(x_minROI,x_maxROI),intensity_crssctn, label = 'Initial intensity')
+ax1.plot(np.arange(x_minROI,x_maxROI),intensity_crssctn_smoothed, label = 'Smoothed intensity')
+ax1.set_title(f"Cropped towards ROI {x_minROI}x{x_maxROI}")
+ax1.set_xlabel("x [pxl]")
+ax1.set_ylabel("Intensity")
+ax1.legend()
+
+ax2.plot(preprocess_img_absorption.extract_intensity_row(
+    x_min=0,x_max= 6000, y_crssctn=None
+), label = 'full row absorption')
+ax2.plot(preprocess_img_gt.extract_intensity_row(
+    x_min=0,x_max= 6000, y_crssctn=None
+), label = 'full row ground truth')
+ax2.set_title("Full width")
+ax2.set_xlabel("x [pxl]")
+ax2.set_ylabel("Intensity")
+ax2.legend()
+
+# Create ROI which determines the boundaries of analysis
+x_min=2172
+x_max=5001
+
+# Plot the intensity profiles and fitted curves
+colorsBlue = plt.cm.Blues(np.linspace(0.55, 0.95, 20))  # Light to dark blue
+colorsOrange = plt.cm.Oranges(np.linspace(0.45, 0.85, 20))
+
+y_crssctn_items = np.linspace(1500, 2900,5,dtype = int)
+print(f"y_crossection: {y_crssctn}")
+fig2, ax2 = plt.subplots()
+fig3, ax3 = plt.subplots()
+fig4, ax4 = plt.subplots()
+fig6, ax6 = plt.subplots()
+fig7, ax7= plt.subplots()
+fig8, ax8 = plt.subplots()
+for items in y_crssctn_items:
+    print(f"Initialized calculations for y_crossection: {y_crssctn}")
+    # Create a new datarray, where data from chosen previous range would be used
+    intensity = preprocess_img_absorption.extract_intensity_row(x_min=x_min, x_max=x_max,  y_crssctn = items)
+    intensity_0 = preprocess_img_gt.extract_intensity_row(x_min=x_min, x_max=x_max,  y_crssctn = items)
+    analysis = ParametricAnalysis(x_min=x_min, x_max=x_max, dpxl_m=preprocess_img_absorption.dpxl_m)
+
+    # Fit the intensity profile with a quadratic function
+    coef, quadratic_func = analysis.fit_quadratic(analysis.x_pxl, intensity)
+    coef_0, quadratic_func_0 = analysis.fit_quadratic(analysis.x_pxl, intensity_0)
+
+    # Generate the fitted y values
+    y_fitted = quadratic_func(analysis.x_pxl)
+    y_fitted_0 = quadratic_func_0(analysis.x_pxl)
+
+
+    plt.figure()
+    plt.plot(analysis.x_pxl, intensity_0, color=colorsBlue[5], label=r"Reference intensity, $I_{ref}$")
+    plt.plot(analysis.x_pxl, y_fitted_0, '--', color=colorsOrange[5], label=r"Result of fit $I_{ref\,fit}$")
+    plt.plot(analysis.x_pxl, intensity, color=colorsBlue[15], label=r"Intensity in region of absorption, $I_{abs}$")
+    plt.plot(analysis.x_pxl, y_fitted, '--', color=colorsOrange[15], label=r"Result of fit $I_{abs\,fit}$")
+    plt.xlabel("Column Index, x [pxl]")
+    plt.ylabel("Intensity")
+    plt.title(f"Intensity Profile and Quadratic Fit\t y_crsctn = {items}")
+    plt.legend(loc='upper right')
+
+   # Compute tau
+    tau = analysis.tau_r(y_fitted, y_fitted_0)
+
+    # Shift and scale x values to center around zero in meters
+    x_central_point = x_min + np.argmin(y_fitted)
+    x_real_m = (analysis.x_pxl - x_central_point) * analysis.dpxl_m
+    zero_index = np.argmin(np.abs(x_real_m))
+
+    # Split tau in two arra ys for positive and negative x
+    tau_negative = tau[:zero_index + 1]
+    tau_positive = tau[zero_index:]
+    x_real_m_negative = x_real_m[:zero_index + 1]
+    x_real_m_positive = x_real_m[zero_index:]
+
+        # Compute the inverse Abel transform using integral and summation methods
+    r0 = max(x_real_m)
+    N = 30
+    dr = r0 / N
+    radius = np.linspace(0, r0, N)
+    radius_for_integration = radius[1:]
+    integrate_result = np.empty_like(radius_for_integration)
+    integrate_error = np.empty_like(radius_for_integration)
+    tau_prime = analysis.manual_gradient(tau_positive, x_real_m_positive)
+
+    # Loop over the radius array and compute Abel integral
+    for i, r in enumerate(radius_for_integration):
+        integrate_result[i] , integrate_error [i]= analysis.compute_integral(r=r, r0=r0, tau_prime=tau_prime, x_values=x_real_m_positive)
+
+    # # Fit the intensity profile with a quadratic function
+    # coef_integral, quadratic_func_integral = analysis.fit_quadratic(radius, integrate_result)
+    # # Generate the fitted y values
+    # integral_fitted = quadratic_func_integral(radius)
+
+
+    valid_indices = ~np.isnan(integrate_result)
+    radius_for_integration = radius_for_integration[valid_indices]
+    integrate_result = integrate_result[valid_indices]
+    integrate_error = integrate_error[valid_indices]  # If needed for error bars
+
+    # Assuming radius, integrate_result, integrate_error, and analysis are already defined
+    # Fit the integrate_result with a quadratic function
+    coef_integral, quadratic_func_integral = analysis.fit_quadratic(radius_for_integration, integrate_result)
+
+    # Generate fitted values using the quadratic function
+    fitted_values = quadratic_func_integral(radius)
+    # Initialize class
+    concentration_calculator = ConcentrationCalculator(lambda_m, mu_Cu, f_ik, g_i, E_i, E_k)
+
+    # Load temperature profile
+    data_temp = concentration_calculator.read_txt_to_array(filepath_temperature)
+    t_profile_K = data_temp[:, 1]
+    r_t_K = data_temp[:, 0]*1e-3
+
+    # Example data for kappa and radius from previous computation
+    # kappa_profile = integrate_result  
+    # r_kappa = radius  
+        # Example data for kappa and radius from previous computation
+    kappa_profile = fitted_values  
+    r_kappa = radius 
+
+    # Interpolate the temperature profile to match the length of kappa_profile
+    t_profile_interpolated = concentration_calculator.interpolate_temperature_profile(r_kappa, r_t_K, t_profile_K)
+
+    # Calculate concentration
+    n_values, n_i, d_lambda_m  = concentration_calculator.calculate_concentration(r_kappa, t_profile_interpolated, kappa_profile, filepath_statsum)
+
+    # Compute Abel integral using `compute_integral` method for a single r
+    r_single = radius[0]
+    integral_result = analysis.compute_integral(r=r_single, r0=r0, tau_prime=tau_prime, x_values=x_real_m_positive)
+    
+    #ALL FOR PLOTTING
+    # Plot tau
+    # plt.figure()
+    # plt.plot(x_real_m, tau)
+    # plt.plot(x_real_m_negative, tau_negative, 'o')
+    # plt.plot(x_real_m_positive, tau_positive, 'o')
+    # plt.xlabel("x [m]")
+    # plt.ylabel(r"$\tau$")
+
+    # Set up plot for tau(r)
+    ax3.plot(x_real_m_positive * 1e3, tau_positive, label = f"y_crssctn = {items} pxl")  # Convert x to mm
+    ax3.set_xlabel("x [mm]")
+    ax3.set_ylabel(r"$\tau_{0}$")
+    ax3.set_xlim(left=0)
+    ax3.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
+    ax3.xaxis.set_minor_locator(ticker.MultipleLocator(0.1))
+    ax3.legend()
+
+    # Plot inverse Abel transform results
+    fig2, ax2 = plt.subplots()
+    ax2.scatter(radius_for_integration * 1e3, integrate_result * 1e-2)  # Convert r to mm and results to 1/cm
+    ax2.set_title("Inverse Abel Transform")
+    ax2.set_xlabel("r [mm]")
+    ax2.set_ylabel(r"$\kappa_{0}\;[1/cm]$")
+    ax2.set_xlim(0, r0 * 1e3)
+
+    
+    # Plot the original integrate_result with error bars
+    plt.figure()
+    plt.errorbar(radius_for_integration* 1e3, integrate_result* 1e-2, yerr=integrate_error*1e-2, fmt='o', label='Integrate Result', capsize=5)
+    # Plot the fitted quadratic function
+    plt.plot(radius* 1e3, fitted_values* 1e-2, label='Fitted Quadratic', linestyle='--', color='red')
+
+    # Add labels, legend, and grid
+    plt.xlabel("r [mm]")
+    plt.ylabel(r"$\kappa_{0}\;[1/cm]$")
+    plt.xlim(left=0)
+    plt.legend()
+    plt.grid(True)
+
+    # Plot kappa out of radious
+
+
+    ax4.plot(r_kappa, kappa_profile, label=f'y_crssctn = {items} pxl')
+    ax4.set_xlabel("Radius [m]")
+    ax4.set_ylabel(r"Kappa")
+
+    # #plot temperature profile
+    # fig, ax5 = plt.subplots()
+    # ax5.plot(r_t_K/mm, t_profile_K, "o", alpha=0.5, label='Input Temperature Profile')
+    # ax5.plot(r_kappa/mm, t_profile_interpolated, 'o', alpha=0.5, label='Interpolated Temperature Profile')
+    # ax5.set_xlabel("Radius [mm]")
+    # ax5.set_ylabel("Temperature [K]")
+    # ax5.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
+    # ax5.xaxis.set_minor_locator(ticker.MultipleLocator(0.1))
+
+    # #Plot Doplers broadening
+    # plt.figure()
+    # plt.plot(r_kappa * 1e3, d_lambda_m*1e9, "o", alpha=0.5)
+    # plt.xlabel("Radius [mm]")
+    # plt.ylabel(r"Doplers broadening, $\Delta \lambda_{D}$ [$nm$]")
+    # plt.legend()
+    # ax = plt.gca()
+    # ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    # ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    # ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
+    # ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+    # Population number density
+    ax6.plot(r_kappa * 1e3, n_i*1e6, "o", alpha=0.5, label=f'y_crssctn = {np.around((items-y_min_electrode)*analysis.dpxl_m*1e3, 3)} mm')
+    ax6.set_xlabel("Radius [mm]")
+    ax6.set_ylabel(r"Population number density $n_{i}$ [m$^{-3}$]")
+    ax6.set_yscale("log")
+    ax6.set_ylim(5e18,1e20)
+    ax6.legend()
+
+    # Plot number density (m)
+    ax7.plot(r_kappa * 1e3, n_values*1e6, "o", alpha=0.5, label=f'y_crssctn = {np.around((items-y_min_electrode)*analysis.dpxl_m*1e3, 3)} mm')
+    ax7.set_xlabel("Radius [mm]")
+    ax7.set_ylabel(r"Number density $n$ [m$^{-3}$]")
+    ax7.set_yscale("log")
+    ax7.set_ylim(1e20,8e21)
+    ax7.legend()
+
+    # Plot number density (m)
+    ax8.plot(r_kappa * 1e3, n_values , "o-", alpha=0.5, label=f'y_crssctn = {items} pxl')
+    ax8.set_xlabel("Radius [mm]")
+    ax8.set_ylabel(r"Number density $n$ [cm$^{-3}$]")
+    ax8.legend()
+
+ax6.legend()
+
+plt.show(block=False)
+input("Press any key to close all plots...")
+plt.close('all')
