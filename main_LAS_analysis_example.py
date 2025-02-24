@@ -9,7 +9,6 @@ from intensity_analysis import IntensityAnalysis
 from optical_param_analysis import OpticalParamAnalysis
 from concentration_calculator import ConcentrationCalculator
 
-from plotting_def import *
 
 """
 Ця версія ще буде зберігати в .тхт отримані значення заселеностей та концентрацій 
@@ -17,20 +16,14 @@ from plotting_def import *
 
 # SET THE PARAMETERS OF IMAGE
 
-# Create ROI which determines the boundaries of analysis
-x_minROI = 2000
-x_maxROI = 4000
-
-
-# MODIFY (Boolean variable to choose which wavelength should be analyzed)
+# boolean variable to choose which wavelength should be analyzed
 wavelength_flag_G_510nm = True
 wavelength_flag_Y_578nm = False
 
-
 # Folders and profiles
 foldername_img = "Photos_19-12"
-filename_img_absorption = "_DSC3426.jpg"  # Absorption image
-filename_img_gt = "_DSC3417o.jpg"  # Ground truth image
+filename_img_absorption = "_DSC3426.jpg"  # зображення з поглинанням
+filename_img_gt = "_DSC3417o.jpg"  # ground truth image
 foldername_savefig = "Photos_19-12/3426"
 
 foldername = "plots_and_results"
@@ -45,10 +38,13 @@ filepath_statsum = os.path.join(foldername, filename_statsum)
 filepath_temperature = os.path.join(foldername, filename_temperature)
 filepath_OES_results = os.path.join(foldername, filename_OES_results)
 
-# MODIFY file FLAGS
-save_output_to_txt = True
-filepath_save_results_txt = os.path.join(foldername, "results_of_plotting.txt")
-save_message = ""
+
+# Create ROI which determines the boundaries of analysis
+x_min = 2000
+x_max = 4000
+x_minROI = x_min  # Define ROI for preanalysis
+x_maxROI = x_max
+
 
 # SET THE PARAMETERS OF PLASMA AND LASER
 image_parameters = {
@@ -56,14 +52,14 @@ image_parameters = {
     "x_max_electrode": 4154,  # Right limit of the electrode
     "y_min_electrode": 1078,  # Lower limit of the electrode
     "y_max_electrode": 2820,  # Upper limit of the electrode
-    "region_size": 3,  # defines size of square (number of pixels)
+    "region_size": 3,
 }
 y_crssctn_absorbtion = (
     2046  # Defined y cross-section if None the crssctn will be defined automatically
 )
 y_crssctn_gt = 2046
 
-# PLASMA parameters. Will be chosen automatically accordingly to your lambda_laser flag
+
 plasma_parameters_Y_578nm = {
     "lambda_m": 587.2 * nm,
     "mu_Cu": 64,
@@ -85,6 +81,10 @@ plasma_parameters = (
     plasma_parameters_G_510nm if wavelength_flag_G_510nm else plasma_parameters_Y_578nm
 )
 
+# FLAGS
+save_output_to_txt = True
+filepath_save_results_txt = os.path.join(foldername, "results_of_plotting.txt")
+save_message = ""
 
 # Instantiate the ImagePreprocess class to read image
 image_absorption = ImagePreprocess(
@@ -118,43 +118,26 @@ x_pxl_gt_ROI, intensity_gt_ROI = analyse_intensity_gt.extract_intensity_from_reg
 
 
 # DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
-plot_image_and_edge_detection(
-    image_left=image_absorption.draw_rectangle_with_overlay(
+fig, [ax1, ax2] = plt.subplots(1, 2)
+ax1.imshow(
+    image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
     ),
-    image_right_edge_detection=image_absorption.draw_rectangle_with_overlay(
-        bgr_image=image_absorption.edge_detection()
-    ),
-)
+    cmap="gray",
+)  # Display grayscale image with rectange
+ax1.set_title("Grayscale image")
+ax1.set_xlabel("x [pxl]")
+ax1.set_ylabel("y [pxl]")
 
-# DISPLAY GT AND ABSORBTION IMAGE
-plot_absorption_gt_image(
-    image_absorption=image_absorption.draw_rectangle_with_overlay(
+ax2.imshow(
+    image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
     ),
-    image_gt=image_gt.draw_rectangle_with_overlay(bgr_image=image_gt.grayscale_image),
-)
-# plt.savefig(os.path.join(foldername_savefig, 'img_gt_abs.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
-
-plot_region_intensity(
-    x=x_pxl_abs,
-    intensity=intensity_abs,
-    x_ROI=x_pxl_abs_ROI,
-    intensity_ROI=intensity_abs_ROI,
-    region_size=image_parameters.get("region_size"),
-)
-
-plot_region_intensity_abs_gt(
-    x_abs=x_pxl_abs,
-    intensity_abs=intensity_abs,
-    x_ROI_abs=x_pxl_abs_ROI,
-    intensity_ROI_abs=intensity_abs_ROI,
-    x_gt=x_pxl_gt,
-    intensity_gt=intensity_gt,
-    x_ROI_gt=x_pxl_gt_ROI,
-    intensity_ROI_gt=intensity_gt_ROI,
-    region_size=image_parameters.get("region_size"),
-)
+    cmap="gray",
+)  # Display grayscale image with rectange
+ax2.set_title("Edge-detected image")
+ax2.set_xlabel("x [pxl]")
+ax2.set_ylabel("y [pxl]")
 
 # Plot crossection in the selected ROI and ax2 that will plot full row intensity pattern
 plt.figure()
@@ -328,8 +311,3 @@ plt.yscale("log")
 plt.ylim(5e19, 5e21)
 
 # plt.savefig(os.path.join(foldername_savefig, 'number_density.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
-plt.legend()
-
-plt.show(block=False)
-input("Press any key to close all plots...")
-plt.close("all")
