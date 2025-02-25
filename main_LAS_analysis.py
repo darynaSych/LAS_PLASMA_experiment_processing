@@ -182,6 +182,9 @@ n, dn, n_i, lambda_broadening_Doplers = compute_plasma_param.calculate_plasma_pa
     filepath_statsum=filepath_statsum,
 )
 
+
+#Plotting
+
 # DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
 plot_image_and_edge_detection(
     image_left=image_absorption.draw_rectangle_with_overlay(
@@ -192,7 +195,6 @@ plot_image_and_edge_detection(
     ),
 )
 
-#Plotting
 
 # DISPLAY GT AND ABSORBTION IMAGE
 plot_absorption_gt_image(
