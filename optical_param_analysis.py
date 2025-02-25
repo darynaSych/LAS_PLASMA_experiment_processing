@@ -47,7 +47,7 @@ class OpticalParamAnalysis():
 
         return tau
 
-    def compute_tau_prime(self, radius: np.ndarray, tau: np.ndarray):
+    def tau_derivative(self, radius: np.ndarray, tau: np.ndarray):
         """
         Computes tau prime from tau
         """

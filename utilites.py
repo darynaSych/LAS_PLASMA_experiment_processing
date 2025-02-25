@@ -15,14 +15,14 @@ def fit_quadratic(x: np.ndarray, y: np.ndarray):
         return coeffs, quadratic_func
 
 
-def apply_square_fit_to_function( x_pxl_ROI: np.ndarray, intensity_ROI: np.ndarray
+def apply_square_fit_to_function( x_array: np.ndarray, y_array: np.ndarray
 ) -> np.ndarray:
     # Fit the intensity profiles with quadratic functions
     coef_absorption, quadratic_func_absorption = fit_quadratic(
-        x_pxl_ROI, intensity_ROI
+        x_array, y_array
     )
     # Generate the fitted intensity values
-    intensity_square_fit = quadratic_func_absorption(x_pxl_ROI)
+    intensity_square_fit = quadratic_func_absorption(x_array)
     return intensity_square_fit
 
     
@@ -83,3 +83,31 @@ def interpolate_function( x_result, x_initial, y_initial):
     return np.interp(x_result, x_initial, y_initial)
 
 
+def load_config(filepath):
+    """Reads a configuration file and returns a dictionary of parameters, ignoring comments."""
+    config = {}
+    with open(filepath, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if not line or line.startswith("#"):  # Ignore empty lines and full-line comments
+                continue
+            
+            # Remove inline comments
+            line = line.split("#", 1)[0].strip()
+
+            if "=" not in line:
+                continue  # Skip malformed lines
+
+            key, value = line.split("=", 1)  # Split at the first '='
+            key, value = key.strip(), value.strip()
+
+            # Convert types automatically (bool, int, float)
+            if value.lower() in ["true", "false"]:
+                config[key] = value.lower() == "true"
+            elif value.isdigit():
+                config[key] = int(value)
+            elif "." in value and value.replace(".", "").isdigit():
+                config[key] = float(value)
+            else:
+                config[key] = value  # Keep as string if no conversion
+    return config

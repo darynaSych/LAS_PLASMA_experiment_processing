@@ -7,7 +7,7 @@ from utilites import *
 from image_preprocess import ImagePreprocess
 from intensity_analysis import IntensityAnalysis
 from optical_param_analysis import OpticalParamAnalysis
-from concentration_calculator import ConcentrationCalculator
+from concentration_calculator import PlasmaValuesCalculator
 
 
 """
@@ -93,7 +93,7 @@ image_absorption = ImagePreprocess(
     y_crssctn=y_crssctn_absorbtion,
 )
 image_absorption.read_image_based_on_extension()
-analyse_intensity_abs = IntensityAnalysis(image_preprocessor=image_absorption)
+analyse_intensity_abs = IntensityAnalysis(preprocessor_object=image_absorption)
 x_pxl_abs, intensity_abs = analyse_intensity_abs.extract_intensity_from_region(
     y_crssctn=y_crssctn_absorbtion
 )
@@ -107,7 +107,7 @@ image_gt = ImagePreprocess(
     filepath=filepath_img_gt, image_parameters=image_parameters, y_crssctn=y_crssctn_gt
 )
 image_gt.read_image_based_on_extension()
-analyse_intensity_gt = IntensityAnalysis(image_preprocessor=image_gt)
+analyse_intensity_gt = IntensityAnalysis(preprocessor_object=image_gt)
 
 x_pxl_gt, intensity_gt = analyse_intensity_gt.extract_intensity_from_region(
     y_crssctn=y_crssctn_gt
@@ -205,7 +205,7 @@ radius_for_analysis_m, tau_for_analysis = (
         tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=True
     )
 )
-tau_prime_for_analysis = optical_param_analysis_sq_fit.compute_tau_prime(
+tau_prime_for_analysis = optical_param_analysis_sq_fit.tau_derivative(
     radius=radius_for_analysis_m, tau=tau_for_analysis
 )
 
@@ -247,7 +247,7 @@ plt.plot(
     color="red",
 )
 
-compute_concentration = ConcentrationCalculator(
+compute_concentration = PlasmaValuesCalculator(
     plasma_parameters=plasma_parameters_G_510nm
 )
 
@@ -260,7 +260,7 @@ plt.figure()
 plt.scatter(r_t_K, kappa_intepolated, label="interpolated to the radius T_k")
 plt.scatter(radius_for_integration, kappa_1_cm_fit)
 
-n, dn, n_i, lambda_broadening_Doplers = compute_concentration.calculate_concentration(
+n, dn, n_i, lambda_broadening_Doplers = compute_concentration.calculate_plasma_parameters(
     radius=r_t_K,
     T_K=t_K,
     d_T_K=d_T_K,

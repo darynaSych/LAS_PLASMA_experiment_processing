@@ -12,25 +12,25 @@ class IntensityAnalysis:
     This class is aimed at analyzing the intensity of an image.
     """
 
-    def __init__(self, image_preprocessor: ImagePreprocess):
+    def __init__(self, preprocessor_object: ImagePreprocess):
         """
         Initialize with an instance of ImagePreprocess to avoid reloading the image.
 
         Args:
             image_preprocessor (ImagePreprocess): Preprocessed image object.
         """
-        self.image_preprocessor = image_preprocessor
-        self.y_crssctn = image_preprocessor.y_crssctn
-        self.region_size = image_preprocessor.region_size
-        self.x_min = image_preprocessor.x_min_electrode
-        self.x_max = image_preprocessor.x_max_electrode
-        self.dpxl_m = image_preprocessor.dpxl_m  # Pixel size in meters
+        self.image_preprocessor = preprocessor_object
+        self.y_crssctn = preprocessor_object.y_crssctn
+        self.region_size = preprocessor_object.region_size
+        self.x_min = preprocessor_object.x_min_electrode
+        self.x_max = preprocessor_object.x_max_electrode
+        self.dpxl_m = preprocessor_object.dpxl_m  # Pixel size in meters
 
         # Ensure image is preprocessed
-        if image_preprocessor.grayscale_image is None:
+        if preprocessor_object.grayscale_image is None:
             raise ValueError("Image has not been loaded or processed.")
 
-        self.grayscale_image = image_preprocessor.grayscale_image
+        self.grayscale_image = preprocessor_object.grayscale_image
 
     def extract_intensity_from_region(
         self, x_min_ROI=None, x_max_ROI=None, y_crssctn=None, region_size=None
@@ -66,13 +66,7 @@ class IntensityAnalysis:
 
         return np.array(x_array_pxl), np.array(intensity_array)
 
-    def apply_square_fit(
-        self, x_pxl_ROI: np.ndarray, intensity_ROI: np.ndarray
-    ) -> np.ndarray:
-        """
-        Calls the utility function to fit intensity data.
-        """
-        return apply_square_fit_to_function(x_pxl_ROI, intensity_ROI)
+
 
     def x_array_rescale_to_m(
         self,

@@ -2,42 +2,41 @@ import os
 import matplotlib.pyplot as plt
 from units_constants import *
 from utilites import *
+from PLASMA_PARAMETERS import *
 
 # Import the classes
 from image_preprocess import ImagePreprocess
 from intensity_analysis import IntensityAnalysis
 from optical_param_analysis import OpticalParamAnalysis
-from concentration_calculator import ConcentrationCalculator
+from concentration_calculator import PlasmaValuesCalculator
 
 from plotting_def import *
+from utilites import *
 
 """
 Ця версія ще буде зберігати в .тхт отримані значення заселеностей та концентрацій 
 """
 
-# SET THE PARAMETERS OF IMAGE
+# Load parameters from text file
+config_file = "Input_file.txt"  # Path to config file
+config = load_config(config_file)
 
-# Create ROI which determines the boundaries of analysis
-x_minROI = 2000
-x_maxROI = 4000
+# Assign values to variables
+x_minROI = config["x_minROI"]
+x_maxROI = config["x_maxROI"]
 
+wavelength_flag_G_510nm = config["wavelength_flag_G_510nm"]
+wavelength_flag_Y_578nm = config["wavelength_flag_Y_578nm"]
 
-# MODIFY (Boolean variable to choose which wavelength should be analyzed)
-wavelength_flag_G_510nm = True
-wavelength_flag_Y_578nm = False
+foldername_img = config["foldername_img"]
+filename_img_absorption = config["filename_img_absorption"]
+filename_img_gt = config["filename_img_gt"]
+foldername_savefig = config["foldername_savefig"]
 
-
-# Folders and profiles
-foldername_img = "Photos_19-12"
-filename_img_absorption = "_DSC3426.jpg"  # Absorption image
-filename_img_gt = "_DSC3417o.jpg"  # Ground truth image
-foldername_savefig = "Photos_19-12/3426"
-
-foldername = "plots_and_results"
-filename_statsum = "Statsum_CuI.txt"  # Statistic sum
-filename_temperature = "temperature_profile_3436.txt"  # Temperature profile
-filename_OES_results = "oes_results_3428.txt"  # File to compare with OES n-profile
-
+foldername = config["foldername"]
+filename_statsum = config["filename_statsum"]
+filename_temperature = config["filename_temperature"]
+filename_OES_results = config["filename_OES_results"]
 
 filepath_img_absorption = os.path.join(foldername_img, filename_img_absorption)
 filepath_img_gt = os.path.join(foldername_img, filename_img_gt)
@@ -45,42 +44,29 @@ filepath_statsum = os.path.join(foldername, filename_statsum)
 filepath_temperature = os.path.join(foldername, filename_temperature)
 filepath_OES_results = os.path.join(foldername, filename_OES_results)
 
+
 # MODIFY file FLAGS
-save_output_to_txt = True
-filepath_save_results_txt = os.path.join(foldername, "results_of_plotting.txt")
-save_message = ""
+save_output_to_txt = config["save_output_to_txt"]
+filepath_save_results_txt = config["filepath_save_results_txt"]
+save_message = config["save_message"]
+
+y_crssctn_absorbtion = config["y_crssctn_absorbtion"]
+y_crssctn_gt = config["y_crssctn_gt"]
 
 # SET THE PARAMETERS OF PLASMA AND LASER
 image_parameters = {
-    "x_min_electrode": 2041,  # Left limit of the electrode
-    "x_max_electrode": 4154,  # Right limit of the electrode
-    "y_min_electrode": 1078,  # Lower limit of the electrode
-    "y_max_electrode": 2820,  # Upper limit of the electrode
-    "region_size": 3,  # defines size of square (number of pixels)
+    "x_min_electrode": config["x_min_electrode"],  # Left limit of the electrode
+    "x_max_electrode": config["x_max_electrode"],  # Right limit of the electrode
+    "y_min_electrode": config["y_min_electrode"],  # Lower limit of the electrode
+    "y_max_electrode": config["y_max_electrode"],  # Upper limit of the electrode
+    "region_size": config["region_size"],  # defines size of square (number of pixels)
 }
-y_crssctn_absorbtion = (
-    2046  # Defined y cross-section if None the crssctn will be defined automatically
-)
-y_crssctn_gt = 2046
+
+right_side_pick_flag = config["right_side_pick_flag"]
+number_of_points_for_integration = config["number_of_points_for_integration"]
+
 
 # PLASMA parameters. Will be chosen automatically accordingly to your lambda_laser flag
-plasma_parameters_Y_578nm = {
-    "lambda_m": 587.2 * nm,
-    "mu_Cu": 64,
-    "f_ik": 0.00328,
-    "g_i": 6.0,
-    "E_i": 1.64,
-    "E_k": 3.82,
-}
-
-plasma_parameters_G_510nm = {
-    "lambda_m": 510.5 * nm,
-    "mu_Cu": 64,
-    "f_ik": 0.00328,
-    "g_i": 6.0,
-    "E_i": 1.38 * eV,
-    "E_k": 3.82 * eV,
-}
 plasma_parameters = (
     plasma_parameters_G_510nm if wavelength_flag_G_510nm else plasma_parameters_Y_578nm
 )
@@ -93,7 +79,7 @@ image_absorption = ImagePreprocess(
     y_crssctn=y_crssctn_absorbtion,
 )
 image_absorption.read_image_based_on_extension()
-analyse_intensity_abs = IntensityAnalysis(image_preprocessor=image_absorption)
+analyse_intensity_abs = IntensityAnalysis(preprocessor_object=image_absorption)
 x_pxl_abs, intensity_abs = analyse_intensity_abs.extract_intensity_from_region(
     y_crssctn=y_crssctn_absorbtion
 )
@@ -107,15 +93,94 @@ image_gt = ImagePreprocess(
     filepath=filepath_img_gt, image_parameters=image_parameters, y_crssctn=y_crssctn_gt
 )
 image_gt.read_image_based_on_extension()
-analyse_intensity_gt = IntensityAnalysis(image_preprocessor=image_gt)
+intensity_analysis_gt = IntensityAnalysis(preprocessor_object=image_gt)
 
-x_pxl_gt, intensity_gt = analyse_intensity_gt.extract_intensity_from_region(
+# Extract intensity from full width
+x_pxl_gt, intensity_gt = intensity_analysis_gt.extract_intensity_from_region(
     y_crssctn=y_crssctn_gt
 )
-x_pxl_gt_ROI, intensity_gt_ROI = analyse_intensity_gt.extract_intensity_from_region(
+# Extract intensity from ROI
+x_pxl_gt_ROI, intensity_gt_ROI = intensity_analysis_gt.extract_intensity_from_region(
     x_min_ROI=x_minROI, x_max_ROI=x_maxROI, y_crssctn=y_crssctn_gt
 )
 
+# Fit extracted ROI intensity with a squared function
+intensity_abs_ROI_square_fit = apply_square_fit_to_function(
+    x_array=x_pxl_abs_ROI, y_array=intensity_abs_ROI
+)
+intensity_gt_ROI_square_fit = apply_square_fit_to_function(
+    x_array=x_pxl_gt_ROI, y_array=intensity_gt_ROI
+)
+
+# Transform x-array from pixels to meters
+x_m_abs = analyse_intensity_abs.x_array_rescale_to_m(
+    x_array_pxl=x_pxl_abs,
+    x_array_pxl_ROI=x_pxl_abs_ROI,
+    intensity_fit_ROI=intensity_abs_ROI_square_fit,
+)
+x_m_abs_ROI = analyse_intensity_abs.x_array_rescale_to_m(
+    x_array_pxl_ROI=x_pxl_abs_ROI,
+    x_array_pxl=x_pxl_abs_ROI,
+    intensity_fit_ROI=intensity_abs_ROI_square_fit,
+)
+
+# Compute tau (optical thickness)
+optical_analysis_from_inensity_sq_fit = OpticalParamAnalysis(
+    x_array_m=x_m_abs_ROI,
+    i_probe=intensity_gt_ROI_square_fit,
+    i_absorption=intensity_abs_ROI_square_fit,
+)
+optical_analysis_from_intensity_scatter = OpticalParamAnalysis(
+    x_array_m=x_m_abs_ROI, i_probe=intensity_gt_ROI, i_absorption=intensity_abs_ROI
+)  # tau from scatter is computed for comparison. For calculation tau fitted is taken into account
+
+# Compute optical thickness (tau)
+tau_ROI = optical_analysis_from_inensity_sq_fit.compute_tau()
+tau_ROI_point = optical_analysis_from_intensity_scatter.compute_tau()
+
+radius_x_m, tau_radius = optical_analysis_from_inensity_sq_fit.analysis_side_picker(
+    tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=right_side_pick_flag
+)  # Chooses which side to analyze. Transforms x into radius
+
+# Computes derivative
+tau_radius_prime = optical_analysis_from_inensity_sq_fit.tau_derivative(
+    radius=radius_x_m, tau=tau_radius
+)
+
+# Abel's transform. The result of integration is kappa [1/cm]. Decreases number of points in radius for integration precision
+radius_for_integration, kappa_1_cm, integrate_error = (
+    optical_analysis_from_inensity_sq_fit.integrate_Abel(
+        number_points=number_of_points_for_integration,
+        radius_m=radius_x_m,
+        tau_prime=tau_radius_prime,
+    )
+)
+kappa_1_cm_sq_fit = apply_square_fit_to_function(radius_for_integration, kappa_1_cm)
+
+compute_plasma_param = PlasmaValuesCalculator(
+    plasma_parameters=plasma_parameters_G_510nm
+)
+
+# Load temperature profile
+t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(filepath_t_K=filepath_temperature)
+kappa_intepolated = interpolate_function(
+    r_t_K, radius_for_integration, kappa_1_cm_sq_fit
+)  # Interpolate kappa to corresond to real temperature profile
+
+# Compute plasma parameters
+''' 
+n - Cooper number density
+dn - - Cooper number density error
+n_i - population number density
+lambda_broadening_Doplers - Doplers' mechanism of broadening
+'''
+n, dn, n_i, lambda_broadening_Doplers = compute_plasma_param.calculate_plasma_parameters(
+    radius=r_t_K,
+    T_K=t_K,
+    d_T_K=d_T_K,
+    kappa_profile=kappa_intepolated,
+    filepath_statsum=filepath_statsum,
+)
 
 # DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
 plot_image_and_edge_detection(
@@ -126,6 +191,8 @@ plot_image_and_edge_detection(
         bgr_image=image_absorption.edge_detection()
     ),
 )
+
+#Plotting
 
 # DISPLAY GT AND ABSORBTION IMAGE
 plot_absorption_gt_image(
@@ -168,13 +235,7 @@ plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
 plt.scatter(x_pxl_gt_ROI, intensity_gt_ROI)
 plt.title("Region intensity ROI")
 
-# Далі фітую РОІ квадратичною функцією
-intensity_abs_ROI_square_fit = analyse_intensity_abs.apply_square_fit(
-    x_pxl_ROI=x_pxl_abs_ROI, intensity_ROI=intensity_abs_ROI
-)
-intensity_gt_ROI_square_fit = analyse_intensity_gt.apply_square_fit(
-    x_pxl_ROI=x_pxl_gt_ROI, intensity_ROI=intensity_gt_ROI
-)
+
 plt.figure()
 plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
 plt.scatter(x_pxl_gt_ROI, intensity_gt_ROI)
@@ -183,17 +244,6 @@ plt.plot(x_pxl_gt_ROI, intensity_gt_ROI_square_fit)
 plt.title("Region intensity ROI squared fit")
 
 
-# Тепер х з пікселів переводжу в метри для РОІ який буде використовуватися далі і для всього простору аби його потім заплотити поруч з пікселями і зберегти
-x_m_abs = analyse_intensity_abs.x_array_rescale_to_m(
-    x_array_pxl=x_pxl_abs,
-    x_array_pxl_ROI=x_pxl_abs_ROI,
-    intensity_fit_ROI=intensity_abs_ROI_square_fit,
-)
-x_m_abs_ROI = analyse_intensity_abs.x_array_rescale_to_m(
-    x_array_pxl_ROI=x_pxl_abs_ROI,
-    x_array_pxl=x_pxl_abs_ROI,
-    intensity_fit_ROI=intensity_abs_ROI_square_fit,
-)
 plt.figure()
 plt.scatter(x_m_abs_ROI, intensity_abs_ROI)
 plt.scatter(x_m_abs, intensity_abs)
@@ -204,27 +254,6 @@ plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
 plt.scatter(x_pxl_abs, intensity_abs)
 plt.title("Region intensity ROI and full row with x in meters")
 
-# Порахувати тау і вивести тау від радіуса в області РОІ
-optical_param_analysis_sq_fit = OpticalParamAnalysis(
-    x_array_m=x_m_abs_ROI,
-    i_probe=intensity_gt_ROI_square_fit,
-    i_absorption=intensity_abs_ROI_square_fit,
-)
-optical_param_analysis_point = OpticalParamAnalysis(
-    x_array_m=x_m_abs_ROI, i_probe=intensity_gt_ROI, i_absorption=intensity_abs_ROI
-)
-
-tau_ROI = optical_param_analysis_sq_fit.compute_tau()
-tau_ROI_point = optical_param_analysis_point.compute_tau()
-
-radius_for_analysis_m, tau_for_analysis = (
-    optical_param_analysis_sq_fit.analysis_side_picker(
-        tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=True
-    )
-)
-tau_prime_for_analysis = optical_param_analysis_sq_fit.compute_tau_prime(
-    radius=radius_for_analysis_m, tau=tau_for_analysis
-)
 
 plt.figure()
 plt.scatter(x_m_abs_ROI, tau_ROI, label="tau square fit")
@@ -233,23 +262,14 @@ plt.title("Region intensity ROI and full row with x in meters")
 
 plt.figure()
 plt.title("Tau with a picked side")
-plt.scatter(radius_for_analysis_m, tau_for_analysis)
-from utilites import *
+plt.scatter(radius_x_m, tau_radius)
 
-# Тут зараз буду шукати перетворення Абеля.
-radius_for_integration, integrate_result, integrate_error = (
-    optical_param_analysis_sq_fit.integrate_Abel(
-        number_points=30,
-        radius_m=radius_for_analysis_m,
-        tau_prime=tau_prime_for_analysis,
-    )
-)
-kappa_1_cm_fit = apply_square_fit_to_function(radius_for_integration, integrate_result)
+
 # Plot the original integrate_result with error bars
 plt.figure()
 plt.errorbar(
     radius_for_integration * 1e3,
-    integrate_result * 1e-2,
+    kappa_1_cm * 1e-2,
     yerr=integrate_error * 1e-2,
     fmt="o",
     label="Integrate Result",
@@ -258,32 +278,18 @@ plt.errorbar(
 # Plot the fitted quadratic function
 plt.plot(
     radius_for_integration * 1e3,
-    kappa_1_cm_fit * 1e-2,
+    kappa_1_cm_sq_fit * 1e-2,
     label="Fitted Quadratic",
     linestyle="--",
     color="red",
 )
 
-compute_concentration = ConcentrationCalculator(
-    plasma_parameters=plasma_parameters_G_510nm
-)
-
-
-# Load temperature profile
-t_K, d_T_K, r_t_K = compute_concentration.read_t_K(filepath_t_K=filepath_temperature)
-kappa_intepolated = interpolate_function(r_t_K, radius_for_integration, kappa_1_cm_fit)
 
 plt.figure()
 plt.scatter(r_t_K, kappa_intepolated, label="interpolated to the radius T_k")
-plt.scatter(radius_for_integration, kappa_1_cm_fit)
+plt.scatter(radius_for_integration, kappa_1_cm_sq_fit)
 
-n, dn, n_i, lambda_broadening_Doplers = compute_concentration.calculate_concentration(
-    radius=r_t_K,
-    T_K=t_K,
-    d_T_K=d_T_K,
-    kappa_profile=kappa_intepolated,
-    filepath_statsum=filepath_statsum,
-)
+
 
 
 # Plot Doplers broadening

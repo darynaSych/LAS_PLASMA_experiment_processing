@@ -2,7 +2,7 @@ import numpy as np
 from units_constants import *
 from utilites import *  
 
-class ConcentrationCalculator:
+class PlasmaValuesCalculator:
     def __init__(self, plasma_parameters, k_B=1.38e-23, eV=1.602e-19):
 
         self.lambda_m = plasma_parameters.get("lambda_m")
@@ -15,15 +15,23 @@ class ConcentrationCalculator:
 
 
     def delta_lambda_doppler(self,t_K):
+        '''
+        Return: d_lambda_d
+        '''
         d_lambda_d = 7.16e-7 * self.lambda_m * np.sqrt(t_K / self.mu_Cu)
         return d_lambda_d
 
     def read_t_K(self, filepath_t_K):
+        """
+        Reads temparature profile from .txt file
+
+        Return: t_K, d_T_K, r_t_K_m - radius
+        """
         data_temp = read_txt_to_array(filepath_t_K)
         t_K = data_temp[:, 1]
         d_T_K = data_temp[:,2]
-        r_t_K = data_temp[:, 0]*1e-3
-        return t_K, d_T_K, r_t_K
+        r_t_K_m = data_temp[:, 0]*1e-3
+        return t_K, d_T_K, r_t_K_m
 
     def concentration_n_i(self, delta_lambda_m, kappa):
         # print(f"kappa: {kappa}")
@@ -47,9 +55,16 @@ class ConcentrationCalculator:
         return stat_sum[temperature_value]
 
 
-    def calculate_concentration(
+    def calculate_plasma_parameters(
         self, radius, T_K, d_T_K, kappa_profile, filepath_statsum
     ):
+        """
+        n - Cooper number density
+        dn - - Cooper number density error
+        n_i - population number density
+        lambda_broadening_Doplers - Doplers' mechanism of broadening
+        
+        """
         n = np.empty_like(radius)
         n_i = np.empty_like(radius)
         d_lambda_m = np.empty_like(radius)

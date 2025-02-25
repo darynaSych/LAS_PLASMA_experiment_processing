@@ -1,0 +1,41 @@
+# Create ROI which determines the boundaries of analysis
+x_minROI=2000
+x_maxROI=4000
+
+#Choose a side for analysis
+right_side_pick_flag=True   # right side if True, left is False
+
+#Parameters for integration
+number_of_points_for_integration=30
+
+# Select wavelength flag
+wavelength_flag_G_510nm=True
+wavelength_flag_Y_578nm=False
+
+# Select center of the crossection row
+y_crssctn_absorbtion=2046
+y_crssctn_gt=2046
+
+# SET IMAGE PARAMETERS
+x_min_electrode=2041  # Left limit of the electrode
+x_max_electrode=4154  # Right limit of the electrode
+y_min_electrode=1078  # Lower limit of the electrode
+y_max_electrode=2820  # Upper limit of the electrode
+region_size=3   # defines size of square (number of pixels)
+
+#define path to files and folders
+foldername_img=Photos_19-12
+filename_img_absorption=_DSC3426.jpg
+filename_img_gt=_DSC3417o.jpg
+foldername_savefig=Photos_19-12/3426
+foldername=plots_and_results
+filename_statsum=Statsum_CuI.txt
+filename_temperature=temperature_profile_3436.txt
+filename_OES_results=oes_results_3428.txt
+
+# Define parameters of .txt file for output data
+save_output_to_txt=True
+filepath_save_results_txt=plots_and_results/results_of_plotting.txt
+save_message=placeholder for save message
+
+

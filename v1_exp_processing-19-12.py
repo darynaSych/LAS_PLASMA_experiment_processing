@@ -15,7 +15,7 @@ from matplotlib.ticker import ScalarFormatter
 import os
 from units_constants import *
 # Import the classes
-from image_analysis import (
+from v1_image_analysis import (
     ImagePreprocess,
     ParametricAnalysis,
     ConcentrationCalculator,
@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import savgol_filter
 from units_constants import *
-from image_analysis import ImagePreprocess, ParametricAnalysis, ConcentrationCalculator
+from v1_image_analysis import ImagePreprocess, ParametricAnalysis, ConcentrationCalculator
 
 """
 Ця версія ще буде зберігати в .тхт отримані значення заселеностей та концентрацій 
