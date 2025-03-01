@@ -9,12 +9,12 @@ class OpticalParamAnalysis():
     def __init__(
         self,
         x_array_m: np.ndarray,
-        i_probe: np.ndarray,
-        i_absorption: np.ndarray,
+        intensity_probe: np.ndarray,
+        intensity_absorption: np.ndarray,
     ):
         self.x_array_m = x_array_m
-        self.i_probe = i_probe
-        self.i_absorption = i_absorption
+        self.i_probe = intensity_probe
+        self.i_absorption = intensity_absorption
 
     def __tau_r(self, i, i_0):
         """

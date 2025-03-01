@@ -2,7 +2,7 @@ import numpy as np
 from units_constants import *
 from utilites import *  
 
-class PlasmaValuesCalculator_:
+class PlasmaValuesCalculator:
     def __init__(self, plasma_parameters, k_B=1.38e-23, eV=1.602e-19):
 
         self.lambda_m = plasma_parameters.get("lambda_m")

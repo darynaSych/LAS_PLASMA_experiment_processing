@@ -1,107 +1,55 @@
-import os
 import matplotlib.pyplot as plt
-from units_constants import *
-from utilites import *
-from PLASMA_PARAMETERS import *
 
 # Import the classes
 from image_preprocess import ImagePreprocess
 from intensity_analysis import IntensityAnalysis
 from optical_param_analysis import OpticalParamAnalysis
-from concentration_calculator import PlasmaValuesCalculator
+from lib_conc_calculator import concentration_calculator
+from config_loader import initialize_config
 
 from plotting_def import *
 from utilites import *
+
+
 
 """
 Ця версія ще буде зберігати в .тхт отримані значення заселеностей та концентрацій 
 """
 
-# Load parameters from text file
-config_file = "Input_file.txt"  # Path to config file
-config = load_config(config_file)
-
-# Assign values to variables
-x_minROI = config["x_minROI"]
-x_maxROI = config["x_maxROI"]
-
-wavelength_flag_G_510nm = config["wavelength_flag_G_510nm"]
-wavelength_flag_Y_578nm = config["wavelength_flag_Y_578nm"]
-
-foldername_img = config["foldername_img"]
-filename_img_absorption = config["filename_img_absorption"]
-filename_img_gt = config["filename_img_gt"]
-foldername_savefig = config["foldername_savefig"]
-
-foldername = config["foldername"]
-filename_statsum = config["filename_statsum"]
-filename_temperature = config["filename_temperature"]
-filename_OES_results = config["filename_OES_results"]
-
-filepath_img_absorption = os.path.join(foldername_img, filename_img_absorption)
-filepath_img_gt = os.path.join(foldername_img, filename_img_gt)
-filepath_statsum = os.path.join(foldername, filename_statsum)
-filepath_temperature = os.path.join(foldername, filename_temperature)
-filepath_OES_results = os.path.join(foldername, filename_OES_results)
-
-
-# MODIFY file FLAGS
-save_output_to_txt = config["save_output_to_txt"]
-filepath_save_results_txt = config["filepath_save_results_txt"]
-save_message = config["save_message"]
-
-y_crssctn_absorbtion = config["y_crssctn_absorbtion"]
-y_crssctn_gt = config["y_crssctn_gt"]
-
-# SET THE PARAMETERS OF PLASMA AND LASER
-image_parameters = {
-    "x_min_electrode": config["x_min_electrode"],  # Left limit of the electrode
-    "x_max_electrode": config["x_max_electrode"],  # Right limit of the electrode
-    "y_min_electrode": config["y_min_electrode"],  # Lower limit of the electrode
-    "y_max_electrode": config["y_max_electrode"],  # Upper limit of the electrode
-    "region_size": config["region_size"],  # defines size of square (number of pixels)
-}
-
-right_side_pick_flag = config["right_side_pick_flag"]
-number_of_points_for_integration = config["number_of_points_for_integration"]
-
-
-# PLASMA parameters. Will be chosen automatically accordingly to your lambda_laser flag
-plasma_parameters = (
-    plasma_parameters_G_510nm if wavelength_flag_G_510nm else plasma_parameters_Y_578nm
-)
+config_file = "Input_file.txt"
+param = initialize_config(config_file=config_file)
 
 
 # Instantiate the ImagePreprocess class to read image
 image_absorption = ImagePreprocess(
-    filepath=filepath_img_absorption,
-    image_parameters=image_parameters,
-    y_crssctn=y_crssctn_absorbtion,
+    filepath=param["filepath_img_absorption"],
+    image_parameters=param["image_parameters"],
+    y_crssctn=param["y_crssctn_absorbtion"],
 )
 image_absorption.read_image_based_on_extension()
 analyse_intensity_abs = IntensityAnalysis(preprocessor_object=image_absorption)
 x_pxl_abs, intensity_abs = analyse_intensity_abs.extract_intensity_from_region(
-    y_crssctn=y_crssctn_absorbtion
+    y_crssctn=param["y_crssctn_absorbtion"]
 )
 x_pxl_abs_ROI, intensity_abs_ROI = analyse_intensity_abs.extract_intensity_from_region(
-    x_min_ROI=x_minROI, x_max_ROI=x_maxROI, y_crssctn=y_crssctn_absorbtion
+    x_min_ROI=param["x_minROI"], x_max_ROI=param["x_maxROI"], y_crssctn=param["y_crssctn_absorbtion"]
 )
 
 
 # Instantiate the ImagePreprocess class for the ground truth image
 image_gt = ImagePreprocess(
-    filepath=filepath_img_gt, image_parameters=image_parameters, y_crssctn=y_crssctn_gt
+    filepath=param["filepath_img_gt"], image_parameters=param["image_parameters"], y_crssctn=param["y_crssctn_gt"]
 )
 image_gt.read_image_based_on_extension()
 intensity_analysis_gt = IntensityAnalysis(preprocessor_object=image_gt)
 
 # Extract intensity from full width
 x_pxl_gt, intensity_gt = intensity_analysis_gt.extract_intensity_from_region(
-    y_crssctn=y_crssctn_gt
+    y_crssctn=param["y_crssctn_gt"]
 )
 # Extract intensity from ROI
 x_pxl_gt_ROI, intensity_gt_ROI = intensity_analysis_gt.extract_intensity_from_region(
-    x_min_ROI=x_minROI, x_max_ROI=x_maxROI, y_crssctn=y_crssctn_gt
+    x_min_ROI=param["x_minROI"], x_max_ROI=param["x_maxROI"], y_crssctn=param["y_crssctn_gt"]
 )
 
 # Fit extracted ROI intensity with a squared function
@@ -127,11 +75,11 @@ x_m_abs_ROI = analyse_intensity_abs.x_array_rescale_to_m(
 # Compute tau (optical thickness)
 optical_analysis_from_inensity_sq_fit = OpticalParamAnalysis(
     x_array_m=x_m_abs_ROI,
-    i_probe=intensity_gt_ROI_square_fit,
-    i_absorption=intensity_abs_ROI_square_fit,
+    intensity_probe=intensity_gt_ROI_square_fit,
+    intensity_absorption=intensity_abs_ROI_square_fit,
 )
 optical_analysis_from_intensity_scatter = OpticalParamAnalysis(
-    x_array_m=x_m_abs_ROI, i_probe=intensity_gt_ROI, i_absorption=intensity_abs_ROI
+    x_array_m=x_m_abs_ROI, intensity_probe=intensity_gt_ROI, intensity_absorption=intensity_abs_ROI
 )  # tau from scatter is computed for comparison. For calculation tau fitted is taken into account
 
 # Compute optical thickness (tau)
@@ -139,7 +87,7 @@ tau_ROI = optical_analysis_from_inensity_sq_fit.compute_tau()
 tau_ROI_point = optical_analysis_from_intensity_scatter.compute_tau()
 
 radius_x_m, tau_radius = optical_analysis_from_inensity_sq_fit.analysis_side_picker(
-    tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=right_side_pick_flag
+    tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=param["right_side_pick_flag"]
 )  # Chooses which side to analyze. Transforms x into radius
 
 # Computes derivative
@@ -150,19 +98,19 @@ tau_radius_prime = optical_analysis_from_inensity_sq_fit.tau_derivative(
 # Abel's transform. The result of integration is kappa [1/cm]. Decreases number of points in radius for integration precision
 radius_for_integration, kappa_1_cm, integrate_error = (
     optical_analysis_from_inensity_sq_fit.integrate_Abel(
-        number_points=number_of_points_for_integration,
+        number_points=param["number_of_points_for_integration"],
         radius_m=radius_x_m,
         tau_prime=tau_radius_prime,
     )
 )
 kappa_1_cm_sq_fit = apply_square_fit_to_function(radius_for_integration, kappa_1_cm)
 
-compute_plasma_param = PlasmaValuesCalculator(
-    plasma_parameters=plasma_parameters_G_510nm
+compute_plasma_param = concentration_calculator.PlasmaValuesCalculator(
+    plasma_parameters=param["plasma_parameters"]
 )
 
 # Load temperature profile
-t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(filepath_t_K=filepath_temperature)
+t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(filepath_t_K=param["filepath_temperature"])
 kappa_intepolated = interpolate_function(
     r_t_K, radius_for_integration, kappa_1_cm_sq_fit
 )  # Interpolate kappa to corresond to real temperature profile
@@ -179,7 +127,7 @@ n, dn, n_i, lambda_broadening_Doplers = compute_plasma_param.calculate_plasma_pa
     T_K=t_K,
     d_T_K=d_T_K,
     kappa_profile=kappa_intepolated,
-    filepath_statsum=filepath_statsum,
+    filepath_statsum=param["filepath_statsum"],
 )
 
 
@@ -210,7 +158,7 @@ plot_region_intensity(
     intensity=intensity_abs,
     x_ROI=x_pxl_abs_ROI,
     intensity_ROI=intensity_abs_ROI,
-    region_size=image_parameters.get("region_size"),
+    region_size=param["image_parameters"].get("region_size"),
 )
 
 plot_region_intensity_abs_gt(
@@ -222,7 +170,7 @@ plot_region_intensity_abs_gt(
     intensity_gt=intensity_gt,
     x_ROI_gt=x_pxl_gt_ROI,
     intensity_ROI_gt=intensity_gt_ROI,
-    region_size=image_parameters.get("region_size"),
+    region_size=param["image_parameters"].get("region_size"),
 )
 
 # Plot crossection in the selected ROI and ax2 that will plot full row intensity pattern

@@ -190,11 +190,11 @@ plt.title("Region intensity ROI and full row with x in meters")
 # Порахувати тау і вивести тау від радіуса в області РОІ
 optical_param_analysis_sq_fit = OpticalParamAnalysis(
     x_array_m=x_m_abs_ROI,
-    i_probe=intensity_gt_ROI_square_fit,
-    i_absorption=intensity_abs_ROI_square_fit,
+    intensity_probe=intensity_gt_ROI_square_fit,
+    intensity_absorption=intensity_abs_ROI_square_fit,
 )
 optical_param_analysis_point = OpticalParamAnalysis(
-    x_array_m=x_m_abs_ROI, i_probe=intensity_gt_ROI, i_absorption=intensity_abs_ROI
+    x_array_m=x_m_abs_ROI, intensity_probe=intensity_gt_ROI, intensity_absorption=intensity_abs_ROI
 )
 
 tau_ROI = optical_param_analysis_sq_fit.compute_tau()
