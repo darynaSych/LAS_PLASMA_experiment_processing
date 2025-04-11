@@ -45,7 +45,10 @@ def initialize_config(config_file):
         "filepath_statsum": os.path.join(foldername, config["filename_statsum"]),
         "filepath_temperature": os.path.join(foldername, config["filename_temperature"]),
         "filepath_OES_results": os.path.join(foldername, config["filename_OES_results"]),
-        "filepath_save_results_txt": config["filepath_save_results_txt"]
+        "filepath_save_results_txt": config["filepath_save_results_txt"],
+        "foldername": config["foldername"],
+        "foldername_savefig" : config["foldername_savefig"],
+        "save_fig_flag" : config["save_fig_flag"]
     }
 
     # Image Processing Parameters
@@ -73,3 +76,5 @@ def initialize_config(config_file):
     }
 
     return {**paths, **settings, "image_parameters": image_parameters}
+
+

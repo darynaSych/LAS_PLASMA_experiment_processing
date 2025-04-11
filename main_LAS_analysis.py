@@ -9,12 +9,8 @@ from config_loader import initialize_config
 
 from plotting_def import *
 from utilites import *
+from save_txt import *
 
-
-
-"""
-Ця версія ще буде зберігати в .тхт отримані значення заселеностей та концентрацій 
-"""
 
 config_file = "Input_file.txt"
 param = initialize_config(config_file=config_file)
@@ -32,13 +28,17 @@ x_pxl_abs, intensity_abs = analyse_intensity_abs.extract_intensity_from_region(
     y_crssctn=param["y_crssctn_absorbtion"]
 )
 x_pxl_abs_ROI, intensity_abs_ROI = analyse_intensity_abs.extract_intensity_from_region(
-    x_min_ROI=param["x_minROI"], x_max_ROI=param["x_maxROI"], y_crssctn=param["y_crssctn_absorbtion"]
+    x_min_ROI=param["x_minROI"],
+    x_max_ROI=param["x_maxROI"],
+    y_crssctn=param["y_crssctn_absorbtion"],
 )
 
 
 # Instantiate the ImagePreprocess class for the ground truth image
 image_gt = ImagePreprocess(
-    filepath=param["filepath_img_gt"], image_parameters=param["image_parameters"], y_crssctn=param["y_crssctn_gt"]
+    filepath=param["filepath_img_gt"],
+    image_parameters=param["image_parameters"],
+    y_crssctn=param["y_crssctn_gt"],
 )
 image_gt.read_image_based_on_extension()
 intensity_analysis_gt = IntensityAnalysis(preprocessor_object=image_gt)
@@ -49,15 +49,17 @@ x_pxl_gt, intensity_gt = intensity_analysis_gt.extract_intensity_from_region(
 )
 # Extract intensity from ROI
 x_pxl_gt_ROI, intensity_gt_ROI = intensity_analysis_gt.extract_intensity_from_region(
-    x_min_ROI=param["x_minROI"], x_max_ROI=param["x_maxROI"], y_crssctn=param["y_crssctn_gt"]
+    x_min_ROI=param["x_minROI"],
+    x_max_ROI=param["x_maxROI"],
+    y_crssctn=param["y_crssctn_gt"],
 )
 
 # Fit extracted ROI intensity with a squared function
-intensity_abs_ROI_square_fit = apply_square_fit_to_function(
-    x_array=x_pxl_abs_ROI, y_array=intensity_abs_ROI
+intensity_abs_ROI_square_fit, intensity_abs_ROI_square_fit_error = (
+    apply_square_fit_to_function(x_array=x_pxl_abs_ROI, y_array=intensity_abs_ROI)
 )
-intensity_gt_ROI_square_fit = apply_square_fit_to_function(
-    x_array=x_pxl_gt_ROI, y_array=intensity_gt_ROI
+intensity_gt_ROI_square_fit, intensity_gt_ROI_square_fit_error = (
+    apply_square_fit_to_function(x_array=x_pxl_gt_ROI, y_array=intensity_gt_ROI)
 )
 
 # Transform x-array from pixels to meters
@@ -79,7 +81,9 @@ optical_analysis_from_inensity_sq_fit = OpticalParamAnalysis(
     intensity_absorption=intensity_abs_ROI_square_fit,
 )
 optical_analysis_from_intensity_scatter = OpticalParamAnalysis(
-    x_array_m=x_m_abs_ROI, intensity_probe=intensity_gt_ROI, intensity_absorption=intensity_abs_ROI
+    x_array_m=x_m_abs_ROI,
+    intensity_probe=intensity_gt_ROI,
+    intensity_absorption=intensity_abs_ROI,
 )  # tau from scatter is computed for comparison. For calculation tau fitted is taken into account
 
 # Compute optical thickness (tau)
@@ -87,7 +91,9 @@ tau_ROI = optical_analysis_from_inensity_sq_fit.compute_tau()
 tau_ROI_point = optical_analysis_from_intensity_scatter.compute_tau()
 
 radius_x_m, tau_radius = optical_analysis_from_inensity_sq_fit.analysis_side_picker(
-    tau_array=tau_ROI, radius_array_m=x_m_abs_ROI, right_side=param["right_side_pick_flag"]
+    tau_array=tau_ROI,
+    radius_array_m=x_m_abs_ROI,
+    right_side=param["right_side_pick_flag"],
 )  # Chooses which side to analyze. Transforms x into radius
 
 # Computes derivative
@@ -103,35 +109,47 @@ radius_for_integration, kappa_1_cm, integrate_error = (
         tau_prime=tau_radius_prime,
     )
 )
-kappa_1_cm_sq_fit = apply_square_fit_to_function(radius_for_integration, kappa_1_cm)
+kappa_1_cm_sq_fit, kappa_1_cm_sq_fit_error = apply_square_fit_to_function(
+    radius_for_integration, kappa_1_cm
+)
 
 compute_plasma_param = concentration_calculator.PlasmaValuesCalculator(
     plasma_parameters=param["plasma_parameters"]
 )
 
 # Load temperature profile
-t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(filepath_t_K=param["filepath_temperature"])
+t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(
+    filepath_t_K=param["filepath_temperature"]
+)
 kappa_intepolated = interpolate_function(
     r_t_K, radius_for_integration, kappa_1_cm_sq_fit
 )  # Interpolate kappa to corresond to real temperature profile
 
 # Compute plasma parameters
-''' 
+""" 
 n - Cooper number density
 dn - - Cooper number density error
 n_i - population number density
 lambda_broadening_Doplers - Doplers' mechanism of broadening
-'''
-n, dn, n_i, lambda_broadening_Doplers = compute_plasma_param.calculate_plasma_parameters(
-    radius=r_t_K,
-    T_K=t_K,
-    d_T_K=d_T_K,
-    kappa_profile=kappa_intepolated,
-    filepath_statsum=param["filepath_statsum"],
+"""
+n, dn, n_i, lambda_broadening_Doplers = (
+    compute_plasma_param.calculate_plasma_parameters(
+        radius=r_t_K,
+        T_K=t_K,
+        d_T_K=d_T_K,
+        kappa_profile=kappa_intepolated,
+        filepath_statsum=param["filepath_statsum"],
+    )
 )
 
+#SAVE .TXT
+save_output_to_txt = param["save_output_to_txt"]
+if save_output_to_txt:
+    arrays = [r_t_K, n*1e6, dn*1e6, n_i*1e6]
+    column_names = ["r [m]", "n [m^-3]", "dn [m^-3]", "n_i [m^-3]", ]
+    save_arrays_to_txt(param["filepath_save_results_txt"], arrays, column_names)
 
-#Plotting
+# PLOTTING SECTION
 
 # DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
 plot_image_and_edge_detection(
@@ -145,6 +163,7 @@ plot_image_and_edge_detection(
 
 
 # DISPLAY GT AND ABSORBTION IMAGE
+
 plot_absorption_gt_image(
     image_absorption=image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
@@ -173,118 +192,50 @@ plot_region_intensity_abs_gt(
     region_size=param["image_parameters"].get("region_size"),
 )
 
-# Plot crossection in the selected ROI and ax2 that will plot full row intensity pattern
-plt.figure()
-plt.scatter(x_pxl_abs, intensity_abs)
-plt.scatter(x_pxl_gt, intensity_gt)
-plt.title("Region intensity")
-# прописати  так, аби абс було кольорове або чорне, а опорне було сірим
-
-plt.figure()
-plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
-plt.scatter(x_pxl_gt_ROI, intensity_gt_ROI)
-plt.title("Region intensity ROI")
-
-
-plt.figure()
-plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
-plt.scatter(x_pxl_gt_ROI, intensity_gt_ROI)
-plt.plot(x_pxl_abs_ROI, intensity_abs_ROI_square_fit)
-plt.plot(x_pxl_gt_ROI, intensity_gt_ROI_square_fit)
-plt.title("Region intensity ROI squared fit")
-
-
-plt.figure()
-plt.scatter(x_m_abs_ROI, intensity_abs_ROI)
-plt.scatter(x_m_abs, intensity_abs)
-plt.title("Region intensity ROI and full row with x in meters")
-
-plt.figure()
-plt.scatter(x_pxl_abs_ROI, intensity_abs_ROI)
-plt.scatter(x_pxl_abs, intensity_abs)
-plt.title("Region intensity ROI and full row with x in meters")
-
-
-plt.figure()
-plt.scatter(x_m_abs_ROI, tau_ROI, label="tau square fit")
-plt.scatter(x_m_abs_ROI, tau_ROI_point, label="tau scatter")
-plt.title("Region intensity ROI and full row with x in meters")
-
-plt.figure()
-plt.title("Tau with a picked side")
-plt.scatter(radius_x_m, tau_radius)
-
-
-# Plot the original integrate_result with error bars
-plt.figure()
-plt.errorbar(
-    radius_for_integration * 1e3,
-    kappa_1_cm * 1e-2,
-    yerr=integrate_error * 1e-2,
-    fmt="o",
-    label="Integrate Result",
-    capsize=5,
-)
-# Plot the fitted quadratic function
-plt.plot(
-    radius_for_integration * 1e3,
-    kappa_1_cm_sq_fit * 1e-2,
-    label="Fitted Quadratic",
-    linestyle="--",
-    color="red",
+plot_ROI_intensity_square_fit(
+    x_pxl_abs_ROI=x_pxl_abs_ROI,
+    x_pxl_gt_ROI=x_pxl_gt_ROI,
+    intensity_abs_ROI=intensity_abs_ROI,
+    intensity_gt_ROI=intensity_gt_ROI,
+    intensity_abs_ROI_square_fit=intensity_abs_ROI_square_fit,
+    intensity_gt_ROI_square_fit=intensity_gt_ROI_square_fit,
 )
 
-
-plt.figure()
-plt.scatter(r_t_K, kappa_intepolated, label="interpolated to the radius T_k")
-plt.scatter(radius_for_integration, kappa_1_cm_sq_fit)
-
-
-
-
-# Plot Doplers broadening
-plt.figure()
-plt.plot(r_t_K * 1e3, lambda_broadening_Doplers * 1e9, "o", alpha=0.5)
-plt.xlabel("Radius [mm]")
-plt.ylabel(r"Doplers broadening, $\Delta \lambda_{D}$ [$nm$]")
-plt.legend()
-# ax = plt.gca()
-# ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-# ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-# ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
-# ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-# plt.savefig(os.path.join(foldername_savefig, 'doplers_broadening.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
-
-
-# Population number density
-plt.figure()
-plt.plot(r_t_K * 1e3, n_i * 1e6, "o", alpha=0.5, label="Concentration")
-plt.xlabel("Radius [mm]")
-plt.ylabel(r"Population number density $n_{i}$ [m$^{-3}$]")
-plt.yscale("log")
-plt.ylim(5e18, 1e21)
-# plt.savefig(os.path.join(foldername_savefig, 'p_number_density.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
-
-
-# Plot number density (m)
-plt.figure()
-plt.plot(r_t_K * 1e3, n * 1e6, "o", alpha=0.5, label="Concentration")
-plt.errorbar(
-    r_t_K * 1e3,
-    n * 1e6,
-    color="black",
-    yerr=dn * 1e6,
-    fmt="o",
-    label="Integrate Result",
-    capsize=3,
+plt_ROI_intensity_m(
+    x_m_abs_ROI=x_m_abs_ROI,
+    intensity_abs_ROI=intensity_abs_ROI,
+    intensity_gt_ROI=intensity_gt_ROI,
 )
-plt.xlabel("Radius [mm]")
-plt.ylabel(r"Number density $n$ [m$^{-3}$]")
-plt.yscale("log")
-plt.ylim(5e19, 5e21)
+plot_optical_thickness(
+    x_m_abs_ROI=x_m_abs_ROI,
+    tau_ROI=tau_ROI,
+    tau_ROI_point=tau_ROI_point,
+    radius_x_m=radius_x_m,
+    tau_radius=tau_radius,
+    side_of_analysis=param["right_side_pick_flag"],
+)
 
-# plt.savefig(os.path.join(foldername_savefig, 'number_density.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
-plt.legend()
+plot_absorption_coefficient(
+    radius_for_integration=radius_for_integration,
+    kappa_1_cm=kappa_1_cm,
+    integrate_error=integrate_error,
+    kappa_1_cm_sq_fit=kappa_1_cm_sq_fit,
+)
+
+plot_T_K_and_interpolated_kappa(
+    r_t_K=r_t_K,
+    t_K=t_K,
+    d_T_K=d_T_K,
+    kappa_intepolated=kappa_intepolated,
+    radius_for_integration=radius_for_integration,
+    kappa_1_cm_sq_fit=kappa_1_cm_sq_fit,
+)
+
+plot_Doplers_broadening(r_t_K=r_t_K, lambda_broadening_Doplers=lambda_broadening_Doplers)
+
+plot_population_number_density(r_t_K=r_t_K, n_i=n_i)
+
+plot_number_density(r_t_K=r_t_K, n=n, dn=dn)
 
 plt.show(block=False)
 input("Press any key to close all plots...")

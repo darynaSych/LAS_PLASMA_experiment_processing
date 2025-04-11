@@ -6,24 +6,26 @@ import matplotlib.pyplot as plt
 """Here all math will be stored"""
 
 def fit_quadratic(x: np.ndarray, y: np.ndarray):
-        """
-        y = ax^2 + bx + c
-        Return: coeffs, quadratic_func
-        """
-        coeffs = np.polyfit(x, y, 2)  # Fit y = ax^2 + bx + c
-        quadratic_func = np.poly1d(coeffs)
-        return coeffs, quadratic_func
+    """
+    Fits y = ax^2 + bx + c to the data.
+    Returns: coeffs, errors, and the quadratic function.
+    """
+    coeffs, cov = np.polyfit(x, y, 2, cov=True)  # <-- add cov=True here
+    quadratic_func = np.poly1d(coeffs)
+    errors = np.sqrt(np.diag(cov))  # standard deviations of a, b, c
+    return coeffs, errors, quadratic_func
+
 
 
 def apply_square_fit_to_function( x_array: np.ndarray, y_array: np.ndarray
 ) -> np.ndarray:
     # Fit the intensity profiles with quadratic functions
-    coef_absorption, quadratic_func_absorption = fit_quadratic(
+    coef_absorption, errors, quadratic_func_absorption = fit_quadratic(
         x_array, y_array
     )
     # Generate the fitted intensity values
     intensity_square_fit = quadratic_func_absorption(x_array)
-    return intensity_square_fit
+    return intensity_square_fit, errors
 
     
 def manual_gradient(y, x):
@@ -82,32 +84,3 @@ def save_plot(fig, filename):
 def interpolate_function( x_result, x_initial, y_initial):
     return np.interp(x_result, x_initial, y_initial)
 
-
-def load_config(filepath):
-    """Reads a configuration file and returns a dictionary of parameters, ignoring comments."""
-    config = {}
-    with open(filepath, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith("#"):  # Ignore empty lines and full-line comments
-                continue
-            
-            # Remove inline comments
-            line = line.split("#", 1)[0].strip()
-
-            if "=" not in line:
-                continue  # Skip malformed lines
-
-            key, value = line.split("=", 1)  # Split at the first '='
-            key, value = key.strip(), value.strip()
-
-            # Convert types automatically (bool, int, float)
-            if value.lower() in ["true", "false"]:
-                config[key] = value.lower() == "true"
-            elif value.isdigit():
-                config[key] = int(value)
-            elif "." in value and value.replace(".", "").isdigit():
-                config[key] = float(value)
-            else:
-                config[key] = value  # Keep as string if no conversion
-    return config

@@ -5,8 +5,8 @@ plasma_parameters_Y_578nm = {
     "mu_Cu": 64,
     "f_ik": 0.00328,
     "g_i": 6.0,
-    "E_i": 1.64,
-    "E_k": 3.82,
+    "E_i": 1.64*eV,
+    "E_k": 3.82*eV,
 }
 
 plasma_parameters_G_510nm = {
