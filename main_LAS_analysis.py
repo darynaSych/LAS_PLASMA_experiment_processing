@@ -11,9 +11,12 @@ from plotting_def import *
 from utilites import *
 from save_txt import *
 
+import sys
 
-config_file = "Input_file.txt"
-param = initialize_config(config_file=config_file)
+#config_file = "Input_file.txt"
+config_file1 = sys.argv[1]
+print(config_file1)
+param = initialize_config(config_file=config_file1)
 
 
 # Instantiate the ImagePreprocess class to read image
@@ -237,6 +240,9 @@ plot_population_number_density(r_t_K=r_t_K, n_i=n_i)
 
 plot_number_density(r_t_K=r_t_K, n=n, dn=dn)
 
-plt.show(block=False)
-input("Press any key to close all plots...")
-plt.close("all")
+if param["show_plots_flag"]:
+    plt.show(block=False)
+    input("Press any key to close all plots...")
+    plt.close("all")
+
+else: print("Calculations have been finished!")

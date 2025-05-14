@@ -48,7 +48,8 @@ def initialize_config(config_file):
         "filepath_save_results_txt": config["filepath_save_results_txt"],
         "foldername": config["foldername"],
         "foldername_savefig" : config["foldername_savefig"],
-        "save_fig_flag" : config["save_fig_flag"]
+        "save_fig_flag" : config["save_fig_flag"],
+        "show_plots_flag" : config["show_plots_flag"]
     }
 
     # Image Processing Parameters

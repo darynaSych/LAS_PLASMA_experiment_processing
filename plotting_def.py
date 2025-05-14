@@ -1,4 +1,5 @@
 import os
+import sys
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from matplotlib.ticker import ScalarFormatter
@@ -6,12 +7,12 @@ from units_constants import *
 from utilites import *
 from config_loader import initialize_config
 
-config_file = "Input_file.txt"
+config_file = sys.argv[1]
 param = initialize_config(config_file=config_file)
 
 # Globals
 parent_folder = param["foldername"]
-save_fig_flag = True #param["save_fig_flag"]
+save_fig_flag = param["save_fig_flag"]
 
 # Define the parent folder and the subfolder name
 folder_name = param["foldername_savefig"]
