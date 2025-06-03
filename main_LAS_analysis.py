@@ -13,10 +13,10 @@ from save_txt import *
 
 import sys
 
-config_file1 = "Input_file_test.txt"
-# config_file1 = sys.argv[1]
-print(config_file1)
-param = initialize_config(config_file=config_file1)
+config_file= sys.argv[1]
+plasma_parameters_file = "plasma_parameters.json"
+
+param = initialize_config(config_file=config_file, plasma_parameters=plasma_parameters_file)
 
 
 # Instantiate the ImagePreprocess class to read image
@@ -148,7 +148,7 @@ n_m_3, dn_m_3, n_i_m_3, d_lambda_Doplers_m = (
 #SAVE .TXT
 save_output_to_txt = param["save_output_to_txt"]
 if save_output_to_txt:
-    arrays = [r_t_K, n_m_3*1e6, dn_m_3*1e6, n_i_m_3*1e6]
+    arrays = [r_t_K, n_m_3, dn_m_3, n_i_m_3]
     column_names = ["r [m]", "n [m^-3]", "dn [m^-3]", "n_i [m^-3]", ]
     save_arrays_to_txt(param["filepath_save_results_txt"], arrays, column_names)
 

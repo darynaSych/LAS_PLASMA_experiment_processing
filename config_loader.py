@@ -1,5 +1,5 @@
 import os
-from PLASMA_PARAMETERS import *
+import json
 
 
 def load_config(filepath):
@@ -32,7 +32,7 @@ def load_config(filepath):
     return config
 
 
-def initialize_config(config_file):
+def initialize_config(config_file, plasma_parameters):
     config = load_config(config_file)
 
     foldername_root = config["foldername_root"]
@@ -56,7 +56,7 @@ def initialize_config(config_file):
         "filepath_statsum": os.path.join(foldername_statsum, config['filename_statsum']),
         "filepath_temperature": os.path.join(foldername_temperature, config["filename_temperature"]),
         "filepath_OES_results": os.path.join(foldername_temperature, config["filename_OES_results"]),
-        "filepath_save_results_txt": os.path.join(foldername_results_image, config["filename_save_results_txt"]),
+        "filepath_save_results_txt": os.path.join(foldername_results_image, 'Results.txt'),
         "foldername_savefig" : foldername_results_image,
         "save_fig_flag": config["save_fig_flag"],
         "show_plots_flag": config["show_plots_flag"]
@@ -71,19 +71,29 @@ def initialize_config(config_file):
         "region_size": config["region_size"],
     }
 
-    # Flags and other parameters
+
+    with open(plasma_parameters, "r") as f:
+        plasma_dict = json.load(f)
+
+    # Select the right parameter set based on flags
+    if config["wavelength_flag_G_510nm"]:
+        plasma_parameters = plasma_dict["G_510nm"]
+    elif config["wavelength_flag_Y_578nm"]:
+        plasma_parameters = plasma_dict["Y_578nm"]
+    else:
+        raise ValueError("No wavelength flag is set to True in the config.")
+
     settings = {
         "x_minROI": config["x_minROI"],
         "x_maxROI": config["x_maxROI"],
         "wavelength_flag_G_510nm": config["wavelength_flag_G_510nm"],
         "wavelength_flag_Y_578nm": config["wavelength_flag_Y_578nm"],
         "save_output_to_txt": config["save_output_to_txt"],
-        "save_message": config["save_message"],
         "y_crssctn_absorbtion": config["y_crssctn_absorbtion"],
         "y_crssctn_gt": config["y_crssctn_gt"],
         "right_side_pick_flag": config["right_side_pick_flag"],
         "number_of_points_for_integration": config["number_of_points_for_integration"],
-        "plasma_parameters": plasma_parameters_G_510nm if config["wavelength_flag_G_510nm"] else plasma_parameters_Y_578nm
+        "plasma_parameters": plasma_parameters
     }
 
     return {**paths, **settings, "image_parameters": image_parameters}

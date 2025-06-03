@@ -1,16 +1,13 @@
-# Create ROI which determines the boundaries of analysis
-x_minROI=1900
-x_maxROI=4318
+# Select wavelength flag
+wavelength_flag_G_510nm=True
+wavelength_flag_Y_578nm=False
 
 #Choose a side for analysis
 right_side_pick_flag=True   # right side if True, left is False
 
-#Parameters for integration
-number_of_points_for_integration=30
-
-# Select wavelength flag
-wavelength_flag_G_510nm=True
-wavelength_flag_Y_578nm=False
+# Create ROI which determines the boundaries of analysis
+x_minROI=1900
+x_maxROI=4318
 
 # Select center of the crossection row
 y_crssctn_absorbtion=2350
@@ -23,24 +20,24 @@ y_min_electrode=1370  # Lower limit of the electrode
 y_max_electrode=3320  # Upper limit of the electrode
 region_size=3   # defines size of square (number of pixels)
 
+
+#Parameters for integration
+number_of_points_for_integration=30 # Кількість точок для інтегрування 
+
+
 #define path to files and folders
+foldername_root = Image Processing TEST/date_of_exp
 filename_img_absorption=_DSC3580.NEF
 filename_img_gt=_DSC3504.NEF
 
-
-foldername_root = Image Processing TEST/date_of_exp
-
-filename_temperature=temperature_profile_test.txt
+# Define files for numerical processing
+filename_temperature=temperature_profile_test.txt # CHANGE FOR A NEW ANALYSIS
 filename_OES_results=oes_results_3428.txt
 filename_statsum = Statsum_CuI.txt
 
 # Define parameters of .txt file for output data
-save_output_to_txt=True
-filename_save_results_txt=results_of_plotting.txt
-save_message=placeholder for save message
-
-#save_plot 
-save_fig_flag = True
-show_plots_flag = True
+save_output_to_txt=True 
+save_fig_flag = True #Saves all figured
+show_plots_flag = True # Shows plots after running a program
 
 

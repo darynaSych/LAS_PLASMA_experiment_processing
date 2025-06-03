@@ -83,7 +83,5 @@ class IntensityAnalysis:
         # Shift and scale x values to center around zero in meters
         min_index = np.argmin(intensity_fit_ROI)
         x_central_point = x_array_pxl_ROI[min_index]
-        print(x_central_point)
-        print(min_index)
         x_real_m = (x_array_pxl - x_central_point) * self.dpxl_m
         return x_real_m

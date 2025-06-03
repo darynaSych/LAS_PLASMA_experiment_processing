@@ -45,7 +45,7 @@ class PlasmaValuesCalculator:
 
 
     def concentration_n(self, n_i, stat_sum, g_i, T_K):
-        E_i_J = self.E_i_eV 
+        E_i_J = self.E_i_eV * eV
         return n_i * stat_sum * np.exp(E_i_J / (self.k_B * T_K)) / g_i
 
 

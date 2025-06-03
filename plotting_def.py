@@ -8,7 +8,7 @@ from utilites import *
 from config_loader import initialize_config
 
 config_file = sys.argv[1]
-param = initialize_config(config_file=config_file)
+param = initialize_config(config_file=config_file, plasma_parameters="plasma_parameters.json")
 # Globals
 save_fig_flag = param["save_fig_flag"]
 foldername_savefig = param ["foldername_savefig"]
