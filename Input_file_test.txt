@@ -27,17 +27,16 @@ region_size=3   # defines size of square (number of pixels)
 filename_img_absorption=_DSC3580.NEF
 filename_img_gt=_DSC3504.NEF
 
-foldername_savefig=1111_test # Will be added to Image Processing TEST/date_of_exp/1111_test
 
 foldername_root = Image Processing TEST/date_of_exp
-foldername=Image Processing TEST/date_of_exp/Results
 
 filename_temperature=temperature_profile_test.txt
 filename_OES_results=oes_results_3428.txt
+filename_statsum = Statsum_CuI.txt
 
 # Define parameters of .txt file for output data
 save_output_to_txt=True
-filepath_save_results_txt=Image Processing TEST/date_of_exp/Results/results_of_plotting.txt
+filename_save_results_txt=results_of_plotting.txt
 save_message=placeholder for save message
 
 #save_plot 

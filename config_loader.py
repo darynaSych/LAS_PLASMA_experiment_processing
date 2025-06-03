@@ -34,22 +34,32 @@ def load_config(filepath):
 
 def initialize_config(config_file):
     config = load_config(config_file)
-    
-    # Image file paths
-    foldername = config["foldername"]
+
     foldername_root = config["foldername_root"]
+    
+    # Define additional folders
+    foldername_temperature = os.path.join(foldername_root, 'Input_files/Input_parameters')
+    foldername_statsum = os.path.join(foldername_root, 'Input_files/Input_parameters')
+    foldername_results = os.path.join(foldername_root, 'Results')  # <-- results folder
+    foldername_results_image = os.path.join(
+    foldername_results, 
+    f"{config['filename_img_absorption']}abs_gt{config['filename_img_gt']}"
+)
+
+    # Create folders if they don't exist
+    for path in [foldername_root, foldername_temperature, foldername_results, foldername_results_image]:
+        os.makedirs(path, exist_ok=True)
 
     paths = {
-        "filepath_img_absorption": os.path.join(foldername_root, "Input_files",config["filename_img_absorption"]),
+        "filepath_img_absorption": os.path.join(foldername_root, "Input_files", config["filename_img_absorption"]),
         "filepath_img_gt": os.path.join(foldername_root, "Input_files", config["filename_img_gt"]),
-        "filepath_statsum": os.path.join(foldername_root, 'Input_files/Input_parameters/Statsum_CuI.txt'),
-        "filepath_temperature": os.path.join(foldername, config["filename_temperature"]),
-        "filepath_OES_results": os.path.join(foldername, config["filename_OES_results"]),
-        "filepath_save_results_txt": config["filepath_save_results_txt"],
-        "foldername": config["foldername"],
-        "foldername_savefig" : config["foldername_savefig"],
-        "save_fig_flag" : config["save_fig_flag"],
-        "show_plots_flag" : config["show_plots_flag"]
+        "filepath_statsum": os.path.join(foldername_statsum, config['filename_statsum']),
+        "filepath_temperature": os.path.join(foldername_temperature, config["filename_temperature"]),
+        "filepath_OES_results": os.path.join(foldername_temperature, config["filename_OES_results"]),
+        "filepath_save_results_txt": os.path.join(foldername_results_image, config["filename_save_results_txt"]),
+        "foldername_savefig" : foldername_results_image,
+        "save_fig_flag": config["save_fig_flag"],
+        "show_plots_flag": config["show_plots_flag"]
     }
 
     # Image Processing Parameters
