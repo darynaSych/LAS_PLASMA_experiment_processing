@@ -6,22 +6,22 @@ from matplotlib.ticker import ScalarFormatter
 from units_constants import *
 from utilites import *
 from config_loader import initialize_config
-def initialise_plotting(parent_folder,save_fig_flag,folder_name):
-    foldername_savefig = os.path.join(parent_folder, folder_name)
+# def initialise_plotting(parent_folder,save_fig_flag,folder_name):
+#     foldername_savefig = os.path.join(parent_folder, folder_name)
 
-    # Check if the subfolder exists, if not, create it
-    if not os.path.exists(foldername_savefig):
-        os.makedirs(foldername_savefig)
-        print(f"Folder '{folder_name}' created inside '{parent_folder}'.")
-    else:
-        print(f"Folder '{folder_name}' already exists inside '{parent_folder}'.")
+#     # Check if the subfolder exists, if not, create it
+#     if not os.path.exists(foldername_savefig):
+#         os.makedirs(foldername_savefig)
+#         print(f"Folder '{folder_name}' created inside '{parent_folder}'.")
+#     else:
+#         print(f"Folder '{folder_name}' already exists inside '{parent_folder}'.")
 
-    foldername_savefig = os.path.join(parent_folder, folder_name)
-    return foldername_savefig
+#     foldername_savefig = os.path.join(parent_folder, folder_name)
+#     return foldername_savefig
 
-config_file = "Input_file_test.txt"
+# config_file = "Input_file_test.txt"
 
-# config_file = sys.argv[1]
+config_file = sys.argv[1]
 param = initialize_config(config_file=config_file)
 
 # Globals

@@ -36,13 +36,13 @@ def initialize_config(config_file):
     config = load_config(config_file)
     
     # Image file paths
-    foldername_img = config["foldername_img"]
     foldername = config["foldername"]
+    foldername_root = config["foldername_root"]
 
     paths = {
-        "filepath_img_absorption": os.path.join(foldername_img, config["filename_img_absorption"]),
-        "filepath_img_gt": os.path.join(foldername_img, config["filename_img_gt"]),
-        "filepath_statsum": os.path.join(foldername, config["filename_statsum"]),
+        "filepath_img_absorption": os.path.join(foldername_root, "Input_files",config["filename_img_absorption"]),
+        "filepath_img_gt": os.path.join(foldername_root, "Input_files", config["filename_img_gt"]),
+        "filepath_statsum": os.path.join(foldername_root, 'Input_files/Input_parameters/Statsum_CuI.txt'),
         "filepath_temperature": os.path.join(foldername, config["filename_temperature"]),
         "filepath_OES_results": os.path.join(foldername, config["filename_OES_results"]),
         "filepath_save_results_txt": config["filepath_save_results_txt"],

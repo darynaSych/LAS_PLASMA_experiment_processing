@@ -24,14 +24,14 @@ y_max_electrode=3320  # Upper limit of the electrode
 region_size=3   # defines size of square (number of pixels)
 
 #define path to files and folders
-foldername_img=Image Processing TEST/date_of_exp/Input_files    # CHANGE DATE OF EXPERIMENT HERE
 filename_img_absorption=_DSC3580.NEF
 filename_img_gt=_DSC3504.NEF
 
 foldername_savefig=1111_test # Will be added to Image Processing TEST/date_of_exp/1111_test
 
+foldername_root = Image Processing TEST/date_of_exp
 foldername=Image Processing TEST/date_of_exp/Results
-filename_statsum=Statsum_CuI.txt
+
 filename_temperature=temperature_profile_test.txt
 filename_OES_results=oes_results_3428.txt
 
