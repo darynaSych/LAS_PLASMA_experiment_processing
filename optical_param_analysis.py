@@ -119,6 +119,7 @@ class OpticalParamAnalysis():
         # Loop over radius values and compute the Abel integral
         for i, r in enumerate(radius_for_integration):
             integrate_result[i], integrate_error[i] = compute_integral(
+
                 r=r, r0=r0, tau_prime=tau_prime, x_values=radius_m
             )
 
@@ -133,6 +134,7 @@ class OpticalParamAnalysis():
         ]  # If required for error analysis
 
         return radius_for_integration, integrate_result, integrate_error
+
 
     def reduce_number_of_points_array(
         x_array: np.ndarray, y_array: np.ndarray, new_number_of_points: int

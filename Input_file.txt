@@ -41,7 +41,7 @@ filepath_save_results_txt=Image Processing TEST/date_of_exp/Results/results_of_p
 save_message=placeholder for save message
 
 #save_plot 
-save_fig_flag = False
-show_plots_flag = False
+save_fig_flag = True
+show_plots_flag = True
 
 

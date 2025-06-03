@@ -9,17 +9,19 @@ class PlasmaValuesCalculator:
         self.mu_Cu = plasma_parameters.get("mu_Cu")
         self.f_ik = plasma_parameters.get("f_ik")
         self.g_i = plasma_parameters.get("g_i")
-        self.E_i = plasma_parameters.get("E_i")
-        self.E_k = plasma_parameters.get("E_k")
+        self.E_i_eV = plasma_parameters.get("E_i")
+        self.E_k_eV = plasma_parameters.get("E_k")
         self.k_B = k_B
 
 
-    def delta_lambda_doppler(self,t_K):
+    def delta_lambda_doppler_m(self,t_K):
         '''
         Return: d_lambda_d
         '''
-        d_lambda_d = 7.16e-7 * self.lambda_m * np.sqrt(t_K / self.mu_Cu)
-        return d_lambda_d
+        lambda_cm = self.lambda_m  * 1e2
+        d_lambda_d_cm = 7.16e-7 * lambda_cm * np.sqrt(t_K / self.mu_Cu)
+        d_lambda_dopler_m = d_lambda_d_cm * 1e-2
+        return d_lambda_dopler_m
 
     def read_t_K(self, filepath_t_K):
         """
@@ -33,19 +35,18 @@ class PlasmaValuesCalculator:
         r_t_K_m = data_temp[:, 0]*1e-3
         return t_K, d_T_K, r_t_K_m
 
-    def concentration_n_i(self, delta_lambda_m, kappa):
-        # print(f"kappa: {kappa}")
-        return (
-            kappa
-            * 1e-2
-            * delta_lambda_m
-            / nm
-            / (8.19e-20 * self.f_ik * (self.lambda_m / nm) ** 2)
-        )
+    def concentration_n_i(self, d_dopler_lambda_m, kappa_m):
+        lambda_сm = self.lambda_m *1e2
+        d_dopler_lambda_сm = d_dopler_lambda_m * 1e2
+        kappa_cm = kappa_m *1e-2
+        koef = 8.19e-20
+        n_i_m_3 = d_dopler_lambda_сm * kappa_cm / (lambda_сm**2) / self.f_ik / koef 
+        return n_i_m_3
 
 
     def concentration_n(self, n_i, stat_sum, g_i, T_K):
-        return n_i * stat_sum / np.exp(-self.E_i / self.k_B / T_K) / g_i
+        E_i_J = self.E_i_eV 
+        return n_i * stat_sum * np.exp(E_i_J / (self.k_B * T_K)) / g_i
 
 
     def __stat_sum_read(self, file_path, temperature_value):
@@ -56,7 +57,7 @@ class PlasmaValuesCalculator:
 
 
     def calculate_plasma_parameters(
-        self, radius, T_K, d_T_K, kappa_profile, filepath_statsum
+        self, radius, T_K, d_T_K, kappa_profile_1_m, filepath_statsum
     ):
         """
         n - Cooper number density
@@ -71,10 +72,9 @@ class PlasmaValuesCalculator:
         for i, r in enumerate(radius):
             current_T_K = T_K[i]
             stat_sum = self.__stat_sum_read(filepath_statsum, int(current_T_K))
-            d_lambda_m[i] = self.delta_lambda_doppler(current_T_K)
-            n_i[i] = self.concentration_n_i(d_lambda_m[i], kappa_profile[i])
+            d_lambda_m[i] = self.delta_lambda_doppler_m(current_T_K)
+            n_i[i] = self.concentration_n_i(d_lambda_m[i], kappa_profile_1_m[i])
             n[i] = self.concentration_n(n_i[i], stat_sum, self.g_i, current_T_K)
-            # print(f'T: {current_T_K}\td_lambda_m: {d_lambda_m[i]}\tn_i: {n_i[i]}\tn: {n[i]}')
             
-        dn = n * self.E_i*eV*d_T_K /T_K**2/1.38e-23
+        dn = n * self.E_i_eV*eV*d_T_K /T_K**2/1.38e-23
         return n, dn,  n_i, d_lambda_m

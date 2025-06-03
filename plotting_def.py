@@ -6,8 +6,22 @@ from matplotlib.ticker import ScalarFormatter
 from units_constants import *
 from utilites import *
 from config_loader import initialize_config
+def initialise_plotting(parent_folder,save_fig_flag,folder_name):
+    foldername_savefig = os.path.join(parent_folder, folder_name)
 
-config_file = sys.argv[1]
+    # Check if the subfolder exists, if not, create it
+    if not os.path.exists(foldername_savefig):
+        os.makedirs(foldername_savefig)
+        print(f"Folder '{folder_name}' created inside '{parent_folder}'.")
+    else:
+        print(f"Folder '{folder_name}' already exists inside '{parent_folder}'.")
+
+    foldername_savefig = os.path.join(parent_folder, folder_name)
+    return foldername_savefig
+
+config_file = "Input_file_test.txt"
+
+# config_file = sys.argv[1]
 param = initialize_config(config_file=config_file)
 
 # Globals
@@ -251,7 +265,7 @@ def plot_absorption_coefficient(
 
     ax1.errorbar(
         radius_for_integration * 1e3,
-        kappa_1_cm * 1e-2,
+        kappa_1_cm,
         yerr=integrate_error * 1e-2,
         fmt="o",
         label="Koefficient of absorption",
@@ -260,7 +274,7 @@ def plot_absorption_coefficient(
     # Plot the fitted quadratic function
     ax1.plot(
         radius_for_integration * 1e3,
-        kappa_1_cm_sq_fit * 1e-2,
+        kappa_1_cm_sq_fit,
         label="Quadratic fit of results",
         linestyle="--",
         color="red",
@@ -320,7 +334,7 @@ def plot_T_K_and_interpolated_kappa(
     )
 
 
-def plot_Doplers_broadening(r_t_K, lambda_broadening_Doplers):
+def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
     """
     Plot Doppler broadening vs radius.
     Parameters:
@@ -329,7 +343,7 @@ def plot_Doplers_broadening(r_t_K, lambda_broadening_Doplers):
     """
     fig, ax1 = plt.subplots(figsize=(7, 6))
 
-    ax1.plot(r_t_K * 1e3, lambda_broadening_Doplers * 1e9, "o", alpha=0.5, label="")
+    ax1.plot(r_t_K * 1e3, d_lambda_Dopler_m * 1e9, "o", alpha=0.5, label="")
     ax1.set_xlabel("Radius [mm]")
     ax1.set_ylabel(r"Doppler broadening, $\Delta \lambda_{D}$ [$nm$]")
     ax1.legend()
@@ -348,10 +362,10 @@ def plot_Doplers_broadening(r_t_K, lambda_broadening_Doplers):
         )
 
 
-def plot_population_number_density(r_t_K, n_i):
+def plot_population_number_density(r_t_K, n_i_m_3):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i * 1e6, "o", alpha=0.5, label="")
+    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.5, label="")
     ax1.set_title("Population number density")
     ax1.set_xlabel("Radius [mm]")
     ax1.set_ylabel(r"Population number density $n_{i}$ [m$^{-3}$]")
@@ -365,13 +379,13 @@ def plot_population_number_density(r_t_K, n_i):
             pad_inches=0.1,
         )
 
-def plot_number_density(r_t_K, n, dn):
+def plot_number_density(r_t_K, n_m_3, dn):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
 
     ax1.errorbar(
         r_t_K * 1e3,
-        n * 1e6,
+        n_m_3,
         yerr=dn * 1e6,
         fmt="o",
         label="",
@@ -385,6 +399,26 @@ def plot_number_density(r_t_K, n, dn):
     if save_fig_flag:
         plt.savefig(
             os.path.join(foldername_savefig, "number_density.png"),
+            dpi=300,
+            bbox_inches="tight",
+            pad_inches=0.1,
+        )
+
+def plot_population_and_number_density(r_t_K, n_i_m_3, n_m_3):
+    # Population number density
+    fig, ax1 = plt.subplots(figsize=(7, 6))
+    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.5, label="Population number density")
+    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.5, label="Cu number density")
+
+    ax1.set_title("")
+    ax1.set_xlabel("Radius [mm]")
+    ax1.set_ylabel(r"$N$ [m$^{-3}$]")
+    ax1.set_yscale("log")
+    # ax1.set_ylim(5e18,1e20)
+    ax1.legend()
+    if save_fig_flag:
+        plt.savefig(
+            os.path.join(foldername_savefig, "p_and_number_density.png"),
             dpi=300,
             bbox_inches="tight",
             pad_inches=0.1,
