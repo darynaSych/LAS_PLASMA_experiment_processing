@@ -197,9 +197,9 @@ def plot_optical_thickness(
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(11, 6))
 
     ax1.scatter(
-        x_m_abs_ROI, tau_ROI_point, s=point_size, label="tau from intensty data points"
+        x_m_abs_ROI, tau_ROI_point, s=point_size,label="tau from intensty data points"
     )
-    ax1.plot(x_m_abs_ROI, tau_ROI, label="tau from square fit intensty")
+    ax1.plot(x_m_abs_ROI, tau_ROI, color = 'red', label="tau from square fit intensty")
     ax1.set_title("Optical thickness")
     ax1.set_xlabel("x [m]")
     ax1.set_ylabel(r"$\tau$")
@@ -212,7 +212,7 @@ def plot_optical_thickness(
     else:
         label = "Label with mistake"
 
-    ax2.plot(radius_x_m, tau_radius, label=label)
+    ax2.plot(radius_x_m, tau_radius,label=label)
     ax2.set_title("Optical thickness (side of analysis)")
     ax2.set_xlabel("r [m]")
     ax2.set_ylabel(r"$\tau$")
@@ -357,15 +357,17 @@ def plot_number_density(r_t_K, n_m_3, dn):
     ax1.errorbar(
         r_t_K * 1e3,
         n_m_3,
-        yerr=dn * 1e6,
+        yerr=dn,
         fmt="o",
         label="",
         capsize=5,
+        color = 'black'
     )
     ax1.set_title("Number density")
     ax1.set_xlabel("Radius [mm]")
     ax1.set_ylabel(r"Number density $n_{i}$ [m$^{-3}$]")
     ax1.set_yscale("log")
+    ax1.set_ylim(1e21,1e22)
     # ax1.set_ylim(5e18,1e20)
     if save_fig_flag:
         plt.savefig(
@@ -378,8 +380,8 @@ def plot_number_density(r_t_K, n_m_3, dn):
 def plot_population_and_number_density(r_t_K, n_i_m_3, n_m_3):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.5, label="Population number density")
-    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.5, label="Cu number density")
+    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label="Population number density")
+    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label="Cu number density")
 
     ax1.set_title("")
     ax1.set_xlabel("Radius [mm]")

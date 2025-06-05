@@ -43,7 +43,7 @@ def initialize_config(config_file, plasma_parameters):
     foldername_results = os.path.join(foldername_root, 'Results')  # <-- results folder
     foldername_results_image = os.path.join(
     foldername_results, 
-    f"{config['filename_img_absorption']}abs_gt{config['filename_img_gt']}"
+f"{config['filename_img_absorption']}abs_gt{config['filename_img_gt']}_rs{config['region_size']}_sctn{config['y_crssctn_absorbtion']}"
 )
 
     # Create folders if they don't exist

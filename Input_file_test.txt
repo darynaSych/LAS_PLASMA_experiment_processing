@@ -6,19 +6,19 @@ wavelength_flag_Y_578nm=False
 right_side_pick_flag=True   # right side if True, left is False
 
 # Create ROI which determines the boundaries of analysis
-x_minROI=1900
-x_maxROI=4318
+x_minROI=1980
+x_maxROI=3900
 
 # Select center of the crossection row
-y_crssctn_absorbtion=2350
-y_crssctn_gt=2400
+y_crssctn_absorbtion=1975
+y_crssctn_gt=1975
 
 # SET IMAGE PARAMETERS
 x_min_electrode=2308  # Left limit of the electrode
-x_max_electrode=4100  # Right limit of the electrode
+x_max_electrode=4230  # Right limit of the electrode
 y_min_electrode=1370  # Lower limit of the electrode
 y_max_electrode=3320  # Upper limit of the electrode
-region_size=3   # defines size of square (number of pixels)
+region_size=5   # defines size of square (number of pixels)
 
 
 #Parameters for integration
@@ -26,9 +26,9 @@ number_of_points_for_integration=30 # Кількість точок для ін�
 
 
 #define path to files and folders
-foldername_root = Image Processing TEST/date_of_exp
-filename_img_absorption=_DSC3580.NEF
-filename_img_gt=_DSC3504.NEF
+foldername_root = Image Processing - diploma/12-05-2025
+filename_img_absorption=_DSC3578.NEF
+filename_img_gt=_DSC3508.NEF
 
 # Define files for numerical processing
 filename_temperature=temperature_profile_test.txt # CHANGE FOR A NEW ANALYSIS
