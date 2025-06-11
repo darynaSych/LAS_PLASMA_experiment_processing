@@ -34,16 +34,31 @@ class PlasmaValuesCalculator:
         d_T_K = data_temp[:,2]
         r_t_K_m = data_temp[:, 0]*1e-3
         return t_K, d_T_K, r_t_K_m
-
+   
+    
+    def concentration_n_i_(self, d_dopler_lambda_m, kappa_m):
+        lambda_cm = self.lambda_m * 1e9
+        d_dopler_lambda_cm = d_dopler_lambda_m *1e9
+        kappa_cm = kappa_m *1e-2
+        koef = 8.85e-20
+        n_i_m_3 = 1e6* d_dopler_lambda_cm * kappa_cm / (lambda_cm**2) / self.f_ik / koef 
+        return n_i_m_3
+    
     def concentration_n_i(self, d_dopler_lambda_m, kappa_m):
-        lambda_сm = self.lambda_m *1e2
-        d_dopler_lambda_сm = d_dopler_lambda_m * 1e2
+        lambda_cm = self.lambda_m * 1e9
+        d_dopler_lambda_cm = d_dopler_lambda_m *1e9
         kappa_cm = kappa_m *1e-2
         koef = 8.19e-20
-        n_i_m_3 = d_dopler_lambda_сm * kappa_cm / (lambda_сm**2) / self.f_ik / koef 
+        n_i_m_3 =  1e6*d_dopler_lambda_cm * kappa_cm / (lambda_cm**2) / self.f_ik / koef 
         return n_i_m_3
+    
 
 
+    def concentration_n_i_(self, d_dopler_lambda_m, kappa_m):
+        koef = 8.3e-15
+        n_i_m_3 = d_dopler_lambda_m * kappa_m / (self.lambda_m**2) / self.f_ik / koef 
+        return n_i_m_3
+    
     def concentration_n(self, n_i, stat_sum, g_i, T_K):
         E_i_J = self.E_i_eV * eV
         return n_i * stat_sum * np.exp(E_i_J / (self.k_B * T_K)) / g_i

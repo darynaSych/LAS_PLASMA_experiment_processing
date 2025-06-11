@@ -84,8 +84,10 @@ class OpticalParamAnalysis():
         radius_m_negative = radius_array_m[: zero_index + 1]
         radius_m_positive = radius_array_m[zero_index:]
 
-        radius_for_analysis_m = radius_m_positive if right_side else radius_m_negative
+        radius_for_analysis_m = radius_m_positive if right_side else -radius_m_negative
         tau_for_analysis_1_cm = tau_positive if right_side else tau_negative
+        if len(radius_for_analysis_m) == 0 or len(tau_for_analysis_1_cm) == 0:
+            raise ValueError("Selected side for analysis is empty. Check input data or ROI.")
         return radius_for_analysis_m, tau_for_analysis_1_cm
 
     def integrate_Abel(

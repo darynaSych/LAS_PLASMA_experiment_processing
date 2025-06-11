@@ -166,7 +166,7 @@ def plt_ROI_intensity_m(
     ax1.scatter(x_m_abs_ROI * 1e3, intensity_abs_ROI, s=point_size, label="Absorption")
     ax1.scatter(x_m_abs_ROI * 1e3, intensity_gt_ROI, s=point_size, label="Probe")
 
-    ax1.set_xlabel("x [mm]")
+    ax1.set_xlabel("x, мм")
     ax1.set_ylabel("Intensity")
     ax1.set_title("Region intensity (x in meters)")
     # Set x-axis ticks every 0.5 mm
@@ -197,24 +197,24 @@ def plot_optical_thickness(
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(11, 6))
 
     ax1.scatter(
-        x_m_abs_ROI, tau_ROI_point, s=point_size,label="tau from intensty data points"
+        x_m_abs_ROI*1e3, tau_ROI_point, s=point_size,label= r"$\tau_{0}$"
     )
-    ax1.plot(x_m_abs_ROI, tau_ROI, color = 'red', label="tau from square fit intensty")
+    ax1.plot(x_m_abs_ROI*1e3, tau_ROI, color = 'red', label=r"$\tau_{0}$ квадр. апроксимація інтенсивності")
     ax1.set_title("Optical thickness")
-    ax1.set_xlabel("x [m]")
-    ax1.set_ylabel(r"$\tau$")
+    ax1.set_xlabel("x, мм")
+    ax1.set_ylabel(r"$\tau_0$")
     ax1.legend()
 
     if side_of_analysis == True:
-        label = "Optical thickness of right side of image"
+        label = r"$\tau_{0}$ (x>0)" 
     elif side_of_analysis == False:
-        label = "Optical thickness of left side of image"
+        label = r"$\tau_{0}$ (x<0)"
     else:
         label = "Label with mistake"
 
-    ax2.plot(radius_x_m, tau_radius,label=label)
+    ax2.plot(radius_x_m*1e3, tau_radius,label=label)
     ax2.set_title("Optical thickness (side of analysis)")
-    ax2.set_xlabel("r [m]")
+    ax2.set_xlabel("r, мм")
     ax2.set_ylabel(r"$\tau$")
     ax2.legend()
 
@@ -239,21 +239,21 @@ def plot_absorption_coefficient(
         kappa_1_cm,
         yerr=integrate_error * 1e-2,
         fmt="o",
-        label="Koefficient of absorption",
+        label= r"$\kappa_{0}$",
         capsize=5,
     )
     # Plot the fitted quadratic function
     ax1.plot(
         radius_for_integration * 1e3,
         kappa_1_cm_sq_fit,
-        label="Quadratic fit of results",
+        label="Квадратична апроксимація результатів",
         linestyle="--",
         color="red",
     )
 
-    ax1.set_title("Inverse Abel Transform")
-    ax1.set_xlabel("r [mm]")
-    ax1.set_ylabel(r"$\kappa_{0}\;[1/cm]$")
+    # ax1.set_title("Inverse Abel Transform")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$\kappa_{0}\;, 1/см$")
     ax1.legend()
 
     if save_fig_flag:
@@ -279,8 +279,8 @@ def plot_T_K_and_interpolated_kappa(
         fmt="o",
         capsize=3,
     )
-    ax1.set_xlabel("r [mm]")
-    ax1.set_ylabel(r"$T [K]$")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$T, K$")
     ax1.legend()
 
     ax2.plot(
@@ -288,12 +288,13 @@ def plot_T_K_and_interpolated_kappa(
         kappa_1_cm_sq_fit,
         linestyle="--",
         color="gray",
-        label=r"$\kappa_{0}$ square fit",
+        label=r"$\kappa_{0}$, квадратична апроксимація",
     )
-    ax2.scatter(r_t_K * 1e3, kappa_intepolated, label="Interpolated", color="black")
+    ax2.scatter(r_t_K * 1e3, kappa_intepolated, label="Iнтерпольованi значення", color="black")
     ax2.set_title("Interpolated to number of points of T_K (OES)")
-    ax2.set_xlabel("r [mm]")
-    ax2.set_ylabel(r"$\kappa_{0}\;[1/cm]$")
+    ax2.set_xlabel("r, мм")
+    ax2.set_ylabel(r"$\kappa_{0}\;, 1/см$")
+    ax2.set_xlim(-0.1, 1.1*r_t_K[-1] * 1e3)
     ax2.legend()
 
     if save_fig_flag:
@@ -314,9 +315,9 @@ def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
     """
     fig, ax1 = plt.subplots(figsize=(7, 6))
 
-    ax1.plot(r_t_K * 1e3, d_lambda_Dopler_m * 1e9, "o", alpha=0.5, label="")
-    ax1.set_xlabel("Radius [mm]")
-    ax1.set_ylabel(r"Doppler broadening, $\Delta \lambda_{D}$ [$nm$]")
+    ax1.plot(r_t_K * 1e3, d_lambda_Dopler_m * 1e9,"o", color = 'black', alpha=0.5, label="")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$\Delta \lambda_{D}$, нм")
     ax1.legend()
 
     ax1.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
@@ -336,10 +337,10 @@ def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
 def plot_population_number_density(r_t_K, n_i_m_3):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.5, label="")
+    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", color = 'black', alpha=0.5, label="")
     ax1.set_title("Population number density")
-    ax1.set_xlabel("Radius [mm]")
-    ax1.set_ylabel(r"Population number density $n_{i}$ [m$^{-3}$]")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$N_{k}$ [м$^{-3}$]")
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     if save_fig_flag:
@@ -363,11 +364,11 @@ def plot_number_density(r_t_K, n_m_3, dn):
         capsize=5,
         color = 'black'
     )
-    ax1.set_title("Number density")
-    ax1.set_xlabel("Radius [mm]")
-    ax1.set_ylabel(r"Number density $n_{i}$ [m$^{-3}$]")
-    ax1.set_yscale("log")
-    ax1.set_ylim(1e21,1e22)
+    # ax1.set_title("Number density")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$N_{Cu}$ [м$^{-3}$]")
+    # ax1.set_yscale("log")
+    # ax1.set_ylim(1e21,1e22)
     # ax1.set_ylim(5e18,1e20)
     if save_fig_flag:
         plt.savefig(
@@ -380,12 +381,12 @@ def plot_number_density(r_t_K, n_m_3, dn):
 def plot_population_and_number_density(r_t_K, n_i_m_3, n_m_3):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label="Population number density")
-    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label="Cu number density")
+    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label=r"$N_k$")
+    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label=r"$N_{Cu}$")
 
     ax1.set_title("")
-    ax1.set_xlabel("Radius [mm]")
-    ax1.set_ylabel(r"$N$ [m$^{-3}$]")
+    ax1.set_xlabel("r, мм")
+    ax1.set_ylabel(r"$N$ [м$^{-3}$]")
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     ax1.legend()
