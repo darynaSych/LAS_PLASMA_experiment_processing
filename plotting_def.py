@@ -21,16 +21,16 @@ def plot_image_and_edge_detection(image_left, image_right_edge_detection):
         cmap="gray",
     )  # Display grayscale image with rectange
     ax1.set_title("Grayscale image")
-    ax1.set_xlabel("x [pxl]")
-    ax1.set_ylabel("y [pxl]")
+    ax1.set_xlabel("x [pxl]",fontsize=16)
+    ax1.set_ylabel("y [pxl]",fontsize=16)
 
     ax2.imshow(
         image_right_edge_detection,
         cmap="gray",
     )  # Display grayscale image with rectange
     ax2.set_title("Edge-detected image")
-    ax2.set_xlabel("x [pxl]")
-    ax2.set_ylabel("y [pxl]")
+    ax2.set_ylabel("y [pxl]",fontsize=16)
+    ax2.set_xlabel("x [pxl]",fontsize=16)
 
     if save_fig_flag:
         plt.savefig(
@@ -45,16 +45,16 @@ def plot_absorption_gt_image(image_absorption, image_gt):
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 4))
     ax1.imshow(image_gt, cmap="gray")  # Display grayscale image with rectange
     ax1.set_title("Probe grayscale image")
-    ax1.set_xlabel("x [pxl]")
-    ax1.set_ylabel("y [pxl]")
+    ax1.set_xlabel("x [pxl]",fontsize=16)
+    ax1.set_ylabel("y [pxl]",fontsize=16)
 
     ax2.imshow(
         image_absorption,
         cmap="gray",
     )  # Display grayscale image with rectange
     ax2.set_title("Absorption grayscale image")
-    ax2.set_xlabel("x [pxl]")
-    ax2.set_ylabel("y [pxl]")
+    ax2.set_xlabel("x [pxl]",fontsize=16)
+    ax2.set_ylabel("y [pxl]",fontsize=16)
 
     if save_fig_flag:
         plt.savefig(
@@ -75,14 +75,14 @@ def plot_region_intensity(x, intensity, x_ROI, intensity_ROI, region_size):
     ax1.plot(x_ROI, intensity_ROI, label="Initial intensity")
     ax1.plot(x_ROI, intensity_crssctn_smoothed, label="Smoothed intensity")
     ax1.set_title(f"Cropped towards ROI {x_ROI[0]}x{x_ROI[-1]}")
-    ax1.set_xlabel("x [pxl]")
-    ax1.set_ylabel("Intensity")
+    ax1.set_xlabel("x [pxl]",fontsize=16)
+    ax1.set_ylabel("Intensity",fontsize=16)
     ax1.legend()
 
     ax2.plot(x, intensity, label="full row absorption")
     ax2.set_title(f"Full width. Region size = {region_size}")
-    ax2.set_xlabel("x [pxl]")
-    ax2.set_ylabel("Intensity")
+    ax2.set_xlabel("x [pxl]",fontsize=16)
+    ax2.set_ylabel("Intensity",fontsize=16)
     ax2.legend()
 
     if save_fig_flag:
@@ -111,15 +111,15 @@ def plot_region_intensity_abs_gt(
     ax1.plot(x_ROI_abs, intensity_ROI_abs, label="Absorption")
     ax1.plot(x_ROI_gt, intensity_ROI_gt, label="Probe")
     ax1.set_title(f"ROI {x_ROI_abs[0]}x{x_ROI_abs[-1]}")
-    ax1.set_xlabel("x [pxl]")
-    ax1.set_ylabel("Intensity")
+    ax1.set_xlabel("x [pxl]",fontsize=16)
+    ax1.set_ylabel("Intensity",fontsize=16)
     ax1.legend()
 
     ax2.plot(x_abs, intensity_abs, label="Absorption")
     ax2.plot(x_gt, intensity_gt, label="Probe")
     ax2.set_title(f"Full width. Region size = {region_size}")
-    ax2.set_xlabel("x [pxl]")
-    ax2.set_ylabel("Intensity")
+    ax2.set_xlabel("x [pxl]",fontsize=16)
+    ax2.set_ylabel("Intensity",fontsize=16)
     ax2.legend()
 
     if save_fig_flag:
@@ -145,8 +145,8 @@ def plot_ROI_intensity_square_fit(
     ax1.plot(x_pxl_abs_ROI, intensity_abs_ROI_square_fit)
     ax1.plot(x_pxl_gt_ROI, intensity_gt_ROI_square_fit)
     ax1.set_title("Region intensity ROI squared fit")
-    ax1.set_xlabel("x [pxl]")
-    ax1.set_ylabel("Intensity")
+    ax1.set_xlabel("x [pxl]",fontsize=16)
+    ax1.set_ylabel("Intensity",fontsize=16)
     ax1.legend()
     
     if save_fig_flag:
@@ -166,8 +166,8 @@ def plt_ROI_intensity_m(
     ax1.scatter(x_m_abs_ROI * 1e3, intensity_abs_ROI, s=point_size, label="Absorption")
     ax1.scatter(x_m_abs_ROI * 1e3, intensity_gt_ROI, s=point_size, label="Probe")
 
-    ax1.set_xlabel("x, мм")
-    ax1.set_ylabel("Intensity")
+    ax1.set_xlabel("x, мм",fontsize=16)
+    ax1.set_ylabel("Intensity",fontsize=16)
     ax1.set_title("Region intensity (x in meters)")
     # Set x-axis ticks every 0.5 mm
     x_min = np.floor(np.min(x_m_abs_ROI * 1e3) * 2) / 2
@@ -201,8 +201,8 @@ def plot_optical_thickness(
     )
     ax1.plot(x_m_abs_ROI*1e3, tau_ROI, color = 'red', label=r"$\tau_{0}$ квадр. апроксимація інтенсивності")
     ax1.set_title("Optical thickness")
-    ax1.set_xlabel("x, мм")
-    ax1.set_ylabel(r"$\tau_0$")
+    ax1.set_xlabel("x, мм",fontsize=16)
+    ax1.set_ylabel(r"$\tau_0$",fontsize=16)
     ax1.legend()
 
     if side_of_analysis == True:
@@ -214,8 +214,8 @@ def plot_optical_thickness(
 
     ax2.plot(radius_x_m*1e3, tau_radius,label=label)
     ax2.set_title("Optical thickness (side of analysis)")
-    ax2.set_xlabel("r, мм")
-    ax2.set_ylabel(r"$\tau$")
+    ax2.set_xlabel("r, мм",fontsize=16)
+    ax2.set_ylabel(r"$\tau$",fontsize=16)
     ax2.legend()
 
     if save_fig_flag:
@@ -252,8 +252,8 @@ def plot_absorption_coefficient(
     )
 
     # ax1.set_title("Inverse Abel Transform")
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$\kappa_{0}\;, 1/см$")
+    ax1.set_xlabel("r, мм",fontsize=16)
+    ax1.set_ylabel(r"$\kappa_{0}\;, 1/см$",fontsize=16)
     ax1.legend()
 
     if save_fig_flag:
@@ -279,8 +279,8 @@ def plot_T_K_and_interpolated_kappa(
         fmt="o",
         capsize=3,
     )
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$T, K$")
+    ax1.set_xlabel("r, мм",fontsize=16)
+    ax1.set_ylabel(r"$T, K$",fontsize=16)
     ax1.legend()
 
     ax2.plot(
@@ -292,8 +292,8 @@ def plot_T_K_and_interpolated_kappa(
     )
     ax2.scatter(r_t_K * 1e3, kappa_intepolated, label="Iнтерпольованi значення", color="black")
     ax2.set_title("Interpolated to number of points of T_K (OES)")
-    ax2.set_xlabel("r, мм")
-    ax2.set_ylabel(r"$\kappa_{0}\;, 1/см$")
+    ax2.set_xlabel("r, мм",fontsize=16)
+    ax2.set_ylabel(r"$\kappa_{0}\;, 1/см$",fontsize=16)
     ax2.set_xlim(-0.1, 1.1*r_t_K[-1] * 1e3)
     ax2.legend()
 
@@ -306,7 +306,7 @@ def plot_T_K_and_interpolated_kappa(
     )
 
 
-def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
+def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m,d_lambda_Doplers_uncertainty_m):
     """
     Plot Doppler broadening vs radius.
     Parameters:
@@ -314,10 +314,17 @@ def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
         d_lambda_m: Doppler broadening array [m]
     """
     fig, ax1 = plt.subplots(figsize=(7, 6))
-
-    ax1.plot(r_t_K * 1e3, d_lambda_Dopler_m * 1e9,"o", color = 'black', alpha=0.5, label="")
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$\Delta \lambda_{D}$, нм")
+    ax1.errorbar(
+        r_t_K * 1e3,
+        d_lambda_Dopler_m * 1e9,
+        yerr=d_lambda_Doplers_uncertainty_m*1e9,
+        fmt="o",
+        label="",
+        capsize=5,
+        color = 'black'
+    )
+    ax1.set_xlabel("r, мм",fontsize=16)
+    ax1.set_ylabel(r"$\Delta \lambda_{D}$, нм",fontsize=16)
     ax1.legend()
 
     ax1.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
@@ -334,13 +341,21 @@ def plot_Doplers_broadening(r_t_K, d_lambda_Dopler_m):
         )
 
 
-def plot_population_number_density(r_t_K, n_i_m_3):
+def plot_population_number_density(r_t_K, n_i_m_3, n_i_m_3_error):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", color = 'black', alpha=0.5, label="")
+    ax1.errorbar(
+        r_t_K * 1e3,
+        n_i_m_3,
+        yerr=n_i_m_3_error,
+        fmt="o",
+        label="",
+        capsize=5,
+        color = 'black'
+    )
     ax1.set_title("Population number density")
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$N_{k}$ [м$^{-3}$]")
+    ax1.set_xlabel("r, мм",fontsize=16)
+    ax1.set_ylabel(r"$N_{k}$ [м$^{-3}$]",fontsize=16)
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     if save_fig_flag:
@@ -365,8 +380,10 @@ def plot_number_density(r_t_K, n_m_3, dn):
         color = 'black'
     )
     # ax1.set_title("Number density")
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$N_{Cu}$ [м$^{-3}$]")
+
+    ax1.set_xlabel("r, мм", fontsize=16)
+    ax1.set_ylabel(r"$N_{Cu}$ [м$^{-3}$]", fontsize=16)
+    ax1.tick_params(axis='both', labelsize=14)
     # ax1.set_yscale("log")
     # ax1.set_ylim(1e21,1e22)
     # ax1.set_ylim(5e18,1e20)
@@ -378,15 +395,35 @@ def plot_number_density(r_t_K, n_m_3, dn):
             pad_inches=0.1,
         )
 
-def plot_population_and_number_density(r_t_K, n_i_m_3, n_m_3):
+def plot_population_and_number_density(r_t_K, n_i_m_3,n_i_m_3_error, n_m_3, n_m_3_error):
     # Population number density
     fig, ax1 = plt.subplots(figsize=(7, 6))
-    ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label=r"$N_k$")
-    ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label=r"$N_{Cu}$")
+    ax1.errorbar(
+        r_t_K * 1e3,
+        n_m_3,
+        yerr=n_m_3_error,
+        fmt="o",
+        capsize=5,
+        color='black',
+        label=r"$N_{Cu}$"
+    )
+
+    ax1.errorbar(
+        r_t_K * 1e3,
+        n_i_m_3,
+        yerr=n_i_m_3_error,
+        fmt="o",
+        capsize=5,
+        color='gray',
+        label=r"$N_{k}$"
+    )
+
+    # ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label=r"$N_k$")
+    # ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label=r"$N_{Cu}$")
 
     ax1.set_title("")
-    ax1.set_xlabel("r, мм")
-    ax1.set_ylabel(r"$N$ [м$^{-3}$]")
+    ax1.set_xlabel("r, мм",fontsize=16)
+    ax1.set_ylabel(r"$N$ [м$^{-3}$]",fontsize=16)
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     ax1.legend()

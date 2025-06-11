@@ -81,7 +81,7 @@ tau_ROI, tau_ROI_error = apply_square_fit_to_function(
     y_array=tau_ROI_point
 )
 
-radius_x_m, tau_radius = optical_analysis_from_intensity_scatter.analysis_side_picker(
+radius_x_m, tau_radius = optical_analysis_from_intensity_scatter.pick_side_of_analysis(
     tau_array=tau_ROI,
     radius_array_m=x_m_abs_ROI,
     right_side=param["right_side_pick_flag"],

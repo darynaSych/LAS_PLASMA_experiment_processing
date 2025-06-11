@@ -57,7 +57,7 @@ class OpticalParamAnalysis():
 
         return tau_prime
 
-    def analysis_side_picker(
+    def pick_side_of_analysis(
         self,
         tau_array: np.ndarray,
         radius_array_m: np.ndarray,
