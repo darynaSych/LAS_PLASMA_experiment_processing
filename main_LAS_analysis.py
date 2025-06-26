@@ -132,7 +132,7 @@ kappa_intepolated_to_R_T_K_1_m = interpolate_function(
     r_t_K, radius_for_integration, kappa_1_m_sq_fit
 )  # Interpolate kappa to corresond to real temperature profile
 
-tau_radius_interpolated_to_R_T_K = interpolate_function(r_t_K, radius_x_m,tau_radius)
+tau_radius_interpolated_to_R_T_K = interpolate_function(r_t_K, radius_x_m, tau_radius)
 # Compute plasma parameters
 """ 
 n - Cooper number density
@@ -155,32 +155,40 @@ lambda_broadening_Doplers - Doplers' mechanism of broadening
     filepath_statsum=param["filepath_statsum"],
 )
 
-kappa_1_m_from_n_i = compute_plasma_param.kappa_from_n_i(n_i=n_i_m_3,d_lambda_m=d_lambda_Doplers_m)
+kappa_1_m_from_n_i = compute_plasma_param.kappa_from_n_i(
+    n_i=n_i_m_3, d_lambda_m=d_lambda_Doplers_m
+)
 
 # SAVE .TXT
 save_output_to_txt = param["save_output_to_txt"]
 if save_output_to_txt:
-    # Очистити файл (відкрити в режимі "w" перед основним записом)
+    # Remove old content from file
     open(param["filepath_save_results_txt"], "w").close()
 
     with open(param["filepath_save_results_txt"], "a") as f:
         f.write("\nPlasma parameters\n")
         arrays = [1e3 * r_t_K, n_m_3, n_m_3_error, n_i_m_3, n_i_m_3_error]
-        column_names = ["r [mm]", "n [m^-3]", "dn [m^-3]","n_i [m^-3]", "dn_i [m^-3]"]
+        column_names = ["r [mm]", "n [m^-3]", "dn [m^-3]", "n_i [m^-3]", "dn_i [m^-3]"]
         save_arrays_to_txt(f, arrays, column_names)
         f.write("\nOptical parameters\n")
-        arrays_optics = [1e3 * r_t_K, tau_radius_interpolated_to_R_T_K,  kappa_intepolated_to_R_T_K_1_m, kappa_1_m_from_n_i]
+        arrays_optics = [
+            1e3 * r_t_K,
+            tau_radius_interpolated_to_R_T_K,
+            kappa_intepolated_to_R_T_K_1_m,
+            kappa_1_m_from_n_i,
+        ]
         column_names_optics = ["r [mm]", "tau", "kappa [1/m]", "kappa_from_ni [1/m]"]
         save_arrays_to_txt(f, arrays_optics, column_names_optics)
         y_position_m = (
             param["y_crssctn_gt"] - param["image_parameters"].get("y_min_electrode")
         ) * image_gt.dpxl_m
         f.write(f"# y_crssctn_gt [mm]:\t{y_position_m*1e3:.6e}\n")
+
+
 # PLOTTING SECTION
 
 # DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
 plot_image_and_edge_detection(
-
     image_left=image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
     ),
@@ -198,15 +206,7 @@ plot_absorption_gt_image(
     ),
     image_gt=image_gt.draw_rectangle_with_overlay(bgr_image=image_gt.grayscale_image),
 )
-# plt.savefig(os.path.join(foldername_savefig, 'img_gt_abs.png'), dpi=300, bbox_inches='tight', pad_inches=0.1)
 
-# plot_region_intensity(
-#     x=x_pxl_abs,
-#     intensity=intensity_abs,
-#     x_ROI=x_pxl_abs_ROI,
-#     intensity_ROI=intensity_abs_ROI,
-#     region_size=param["image_parameters"].get("region_size"),
-# )
 
 plot_region_intensity_abs_gt(
     x_abs=x_pxl_abs,
@@ -250,8 +250,10 @@ plot_absorption_coefficient(
     kappa_1_cm_sq_fit=0.01 * kappa_1_m_sq_fit,
 )
 
-plot_absorption_coefficient_from_n_i(radius_for_integration=r_t_K,
-    kappa_1_cm_from_n_i=0.01 * kappa_1_m_from_n_i,)
+plot_absorption_coefficient_from_n_i(
+    radius_for_integration=r_t_K,
+    kappa_1_cm_from_n_i=0.01 * kappa_1_m_from_n_i,
+)
 
 plot_T_K_and_interpolated_kappa(
     r_t_K=r_t_K,
