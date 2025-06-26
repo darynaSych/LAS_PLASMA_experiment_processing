@@ -162,3 +162,7 @@ class PlasmaValuesCalculator:
         n_i_error = self.concentration_n_i_error(n_i=n_i, d_dopler_lambda_m = d_lambda_m, delta_dopler_lambda_m = d_lambda_uncertainty_m, kappa_m = kappa_profile_1_m, delta_kappa_m = kappa_profile_1_m*1e-2)
         dn = self.concentration_n_error(n=n, n_i=n_i, delta_n_i=n_i_error, T_K=T_K, delta_T_K = d_T_K)
         return n, dn,  n_i, n_i_error, d_lambda_m, d_lambda_uncertainty_m
+    
+    def kappa_from_n_i(self, n_i,d_lambda_m):
+        kappa = np.sqrt(np.log(2)/np.pi)*self.lambda_m**2*(1.6e-19)**2*n_i*self.f_ik/d_lambda_m/2/9.1e-31/9e16/8.85e-12
+        return kappa

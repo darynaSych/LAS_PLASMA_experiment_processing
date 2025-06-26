@@ -31,7 +31,7 @@ def plot_image_and_edge_detection(image_left, image_right_edge_detection):
     ax2.set_title("Edge-detected image")
     ax2.set_ylabel("y [pxl]",fontsize=16)
     ax2.set_xlabel("x [pxl]",fontsize=16)
-
+    plt.tight_layout()
     if save_fig_flag:
         plt.savefig(
         os.path.join(foldername_savefig, "image_and_edge_detection.png"),
@@ -55,6 +55,7 @@ def plot_absorption_gt_image(image_absorption, image_gt):
     ax2.set_title("Absorption grayscale image")
     ax2.set_xlabel("x [pxl]",fontsize=16)
     ax2.set_ylabel("y [pxl]",fontsize=16)
+    plt.tight_layout()
 
     if save_fig_flag:
         plt.savefig(
@@ -106,14 +107,15 @@ def plot_region_intensity_abs_gt(
     region_size,
 ):
 
-    # DISPLAY CROSSECTION ROI AND FULL of GT image and absorbtion
+    # DISPLAY CROSSECTION ROI AND FULL of GT image and absorption
     fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(11, 6))
-    ax1.plot(x_ROI_abs, intensity_ROI_abs, label="Absorption")
-    ax1.plot(x_ROI_gt, intensity_ROI_gt, label="Probe")
+    ax1.plot(x_ROI_abs, intensity_ROI_abs, label="Absorption", color="#011f4b")
+    ax1.plot(x_ROI_gt, intensity_ROI_gt, label="Probe", color="#005b96")
     ax1.set_title(f"ROI {x_ROI_abs[0]}x{x_ROI_abs[-1]}")
-    ax1.set_xlabel("x [pxl]",fontsize=16)
-    ax1.set_ylabel("Intensity",fontsize=16)
+    ax1.set_xlabel("x [pxl]", fontsize=16)
+    ax1.set_ylabel("Intensity", fontsize=16)
     ax1.legend()
+
 
     ax2.plot(x_abs, intensity_abs, label="Absorption")
     ax2.plot(x_gt, intensity_gt, label="Probe")
@@ -140,13 +142,13 @@ def plot_ROI_intensity_square_fit(
     intensity_gt_ROI_square_fit,
 ):
     fig, ax1 = plt.subplots(figsize=(11, 6))
-    ax1.scatter(x_pxl_abs_ROI, intensity_abs_ROI, s=10, alpha=0.5, label="Absorption")
-    ax1.scatter(x_pxl_gt_ROI, intensity_gt_ROI, s=10, alpha=0.5, label="Probe")
-    ax1.plot(x_pxl_abs_ROI, intensity_abs_ROI_square_fit)
-    ax1.plot(x_pxl_gt_ROI, intensity_gt_ROI_square_fit)
+    ax1.scatter(x_pxl_abs_ROI, intensity_abs_ROI, s=10, color='#03396c', label=r"Absorption, $I_{abs}$")
+    ax1.scatter(x_pxl_gt_ROI, intensity_gt_ROI, s=10, color='#6497b1', label=r"Probe, $I_{ref}$")
+    ax1.plot(x_pxl_abs_ROI, intensity_abs_ROI_square_fit, color='#b35517', linewidth=2, label=r"$I_{abs fit}$")
+    ax1.plot(x_pxl_gt_ROI, intensity_gt_ROI_square_fit, color='#e56e1e', linewidth=2, label=r"$I_{ref fit}$")
     ax1.set_title("Region intensity ROI squared fit")
-    ax1.set_xlabel("x [pxl]",fontsize=16)
-    ax1.set_ylabel("Intensity",fontsize=16)
+    ax1.set_xlabel("x [pxl]", fontsize=16)
+    ax1.set_ylabel("Intensity", fontsize=16)
     ax1.legend()
     
     if save_fig_flag:
@@ -251,9 +253,21 @@ def plot_absorption_coefficient(
         color="red",
     )
 
+def plot_absorption_coefficient_from_n_i(
+    radius_for_integration, kappa_1_cm_from_n_i 
+):
+    # Plot results_of_integration
+    fig, ax1 = plt.subplots(figsize=(7, 6))
+
+    ax1.scatter(
+        radius_for_integration * 1e3, kappa_1_cm_from_n_i ,
+        label= r"$\kappa_{0}$",
+
+    )
+
     # ax1.set_title("Inverse Abel Transform")
     ax1.set_xlabel("r, мм",fontsize=16)
-    ax1.set_ylabel(r"$\kappa_{0}\;, 1/см$",fontsize=16)
+    ax1.set_ylabel(r"$\kappa_{0}\; from n_i, 1/см$",fontsize=16)
     ax1.legend()
 
     if save_fig_flag:
@@ -355,7 +369,7 @@ def plot_population_number_density(r_t_K, n_i_m_3, n_i_m_3_error):
     )
     ax1.set_title("Population number density")
     ax1.set_xlabel("r, мм",fontsize=16)
-    ax1.set_ylabel(r"$N_{k}$ [м$^{-3}$]",fontsize=16)
+    ax1.set_ylabel(r"$N_{i}$, м$^{-3}$",fontsize=16)
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     if save_fig_flag:
@@ -382,7 +396,7 @@ def plot_number_density(r_t_K, n_m_3, dn):
     # ax1.set_title("Number density")
 
     ax1.set_xlabel("r, мм", fontsize=16)
-    ax1.set_ylabel(r"$N_{Cu}$ [м$^{-3}$]", fontsize=16)
+    ax1.set_ylabel(r"$N_{Cu}$, м$^{-3}$", fontsize=16)
     ax1.tick_params(axis='both', labelsize=14)
     # ax1.set_yscale("log")
     # ax1.set_ylim(1e21,1e22)
@@ -415,15 +429,15 @@ def plot_population_and_number_density(r_t_K, n_i_m_3,n_i_m_3_error, n_m_3, n_m_
         fmt="o",
         capsize=5,
         color='gray',
-        label=r"$N_{k}$"
+        label=r"$N_{i}$"
     )
 
-    # ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label=r"$N_k$")
+    # ax1.plot(r_t_K * 1e3, n_i_m_3, "o", alpha=0.9, color='gray', label=r"$N_i$")
     # ax1.plot(r_t_K * 1e3, n_m_3, "o", alpha=0.9, color= 'black',label=r"$N_{Cu}$")
 
     ax1.set_title("")
     ax1.set_xlabel("r, мм",fontsize=16)
-    ax1.set_ylabel(r"$N$ [м$^{-3}$]",fontsize=16)
+    ax1.set_ylabel(r"$N$, м$^{-3}$",fontsize=16)
     ax1.set_yscale("log")
     # ax1.set_ylim(5e18,1e20)
     ax1.legend()

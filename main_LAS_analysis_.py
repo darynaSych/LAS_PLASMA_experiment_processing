@@ -155,13 +155,13 @@ plot_absorption_gt_image(
     image_gt=image_gt.draw_rectangle_with_overlay(bgr_image=image_gt.grayscale_image),
 )
 
-plot_region_intensity(
-    x=x_pxl_abs,
-    intensity=intensity_abs,
-    x_ROI=x_pxl_abs_ROI,
-    intensity_ROI=intensity_abs_ROI,
-    region_size=param["image_parameters"].get("region_size"),
-)
+# plot_region_intensity(
+#     x=x_pxl_abs,
+#     intensity=intensity_abs,
+#     x_ROI=x_pxl_abs_ROI,
+#     intensity_ROI=intensity_abs_ROI,
+#     region_size=param["image_parameters"].get("region_size"),
+# )
 
 plot_region_intensity_abs_gt(
     x_abs=x_pxl_abs,
