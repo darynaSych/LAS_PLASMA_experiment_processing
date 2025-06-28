@@ -116,29 +116,74 @@ kappa_intepolated_1_m = interpolate_function(
     r_t_K, radius_for_integration, kappa_1_m_sq_fit
 )
 
+compute_plasma_param = concentration_calculator.PlasmaValuesCalculator(
+    plasma_parameters=param["plasma_parameters"]
+)
+
+# Load temperature profile
+t_K, d_T_K, r_t_K = compute_plasma_param.read_t_K(
+    filepath_t_K=param["filepath_temperature"]
+)
+kappa_intepolated_to_R_T_K_1_m = interpolate_function(
+    r_t_K, radius_for_integration, kappa_1_m_sq_fit
+)  # Interpolate kappa to corresond to real temperature profile
+
+tau_radius_interpolated_to_R_T_K = interpolate_function(r_t_K, radius_x_m, tau_radius)
 # Compute plasma parameters
-n_m_3, dn_m_3, n_i_m_3, d_lambda_Doplers_m = (
-    compute_plasma_param.calculate_plasma_parameters(
-        radius=r_t_K,
-        T_K=t_K,
-        d_T_K=d_T_K,
-        kappa_profile_1_m=kappa_intepolated_1_m,
-        filepath_statsum=param["filepath_statsum"],
-    )
+""" 
+n - Cooper number density
+dn - - Cooper number density error
+n_i - population number density
+lambda_broadening_Doplers - Doplers' mechanism of broadening
+"""
+(
+    n_m_3,
+    n_m_3_error,
+    n_i_m_3,
+    n_i_m_3_error,
+    d_lambda_Doplers_m,
+    d_lambda_Doplers_uncertainty_m,
+) = compute_plasma_param.calculate_plasma_parameters(
+    radius=r_t_K,
+    T_K=t_K,
+    d_T_K=d_T_K,
+    kappa_profile_1_m=kappa_intepolated_to_R_T_K_1_m,
+    filepath_statsum=param["filepath_statsum"],
+)
+
+kappa_1_m_from_n_i = compute_plasma_param.kappa_from_n_i(
+    n_i=n_i_m_3, d_lambda_m=d_lambda_Doplers_m
 )
 
 # SAVE .TXT
 save_output_to_txt = param["save_output_to_txt"]
 if save_output_to_txt:
-    arrays = [r_t_K, n_m_3, dn_m_3, n_i_m_3]
-    column_names = ["r [m]", "n [m^-3]", "dn [m^-3]", "n_i [m^-3]"]
-    save_arrays_to_txt(param["filepath_save_results_txt"], arrays, column_names)
+    # Remove old content from file
+    open(param["filepath_save_results_txt"], "w").close()
 
-    y_position_m = (param["y_crssctn_gt"] - param["image_parameters"].get("y_min_electrode")) * image_gt.dpxl_m
     with open(param["filepath_save_results_txt"], "a") as f:
+        f.write("\nPlasma parameters\n")
+        arrays = [1e3 * r_t_K, n_m_3, n_m_3_error, n_i_m_3, n_i_m_3_error]
+        column_names = ["r [mm]", "n [m^-3]", "dn [m^-3]", "n_i [m^-3]", "dn_i [m^-3]"]
+        save_arrays_to_txt(f, arrays, column_names)
+        f.write("\nOptical parameters\n")
+        arrays_optics = [
+            1e3 * r_t_K,
+            tau_radius_interpolated_to_R_T_K,
+            kappa_intepolated_to_R_T_K_1_m,
+            kappa_1_m_from_n_i,
+        ]
+        column_names_optics = ["r [mm]", "tau", "kappa [1/m]", "kappa_from_ni [1/m]"]
+        save_arrays_to_txt(f, arrays_optics, column_names_optics)
+        y_position_m = (
+            param["y_crssctn_gt"] - param["image_parameters"].get("y_min_electrode")
+        ) * image_gt.dpxl_m
         f.write(f"# y_crssctn_gt [mm]:\t{y_position_m*1e3:.6e}\n")
 
+
 # PLOTTING SECTION
+
+# DISPLAY IMAGE WITH RECTANGULAR FRAME AND EDGE-DETECTED IMAGE
 plot_image_and_edge_detection(
     image_left=image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
@@ -148,6 +193,9 @@ plot_image_and_edge_detection(
     ),
 )
 
+
+# DISPLAY GT AND ABSORBTION IMAGE
+
 plot_absorption_gt_image(
     image_absorption=image_absorption.draw_rectangle_with_overlay(
         bgr_image=image_absorption.grayscale_image
@@ -155,13 +203,6 @@ plot_absorption_gt_image(
     image_gt=image_gt.draw_rectangle_with_overlay(bgr_image=image_gt.grayscale_image),
 )
 
-# plot_region_intensity(
-#     x=x_pxl_abs,
-#     intensity=intensity_abs,
-#     x_ROI=x_pxl_abs_ROI,
-#     intensity_ROI=intensity_abs_ROI,
-#     region_size=param["image_parameters"].get("region_size"),
-# )
 
 plot_region_intensity_abs_gt(
     x_abs=x_pxl_abs,
@@ -175,12 +216,20 @@ plot_region_intensity_abs_gt(
     region_size=param["image_parameters"].get("region_size"),
 )
 
+# plot_ROI_intensity_square_fit(
+#     x_pxl_abs_ROI=x_pxl_abs_ROI,
+#     x_pxl_gt_ROI=x_pxl_gt_ROI,
+#     intensity_abs_ROI=intensity_abs_ROI,
+#     intensity_gt_ROI=intensity_gt_ROI,
+#     intensity_abs_ROI_square_fit=intensity_abs_ROI_square_fit,
+#     intensity_gt_ROI_square_fit=intensity_gt_ROI_square_fit,
+# )
+
 plt_ROI_intensity_m(
     x_m_abs_ROI=x_m_abs_ROI,
     intensity_abs_ROI=intensity_abs_ROI,
     intensity_gt_ROI=intensity_gt_ROI,
 )
-
 plot_optical_thickness(
     x_m_abs_ROI=x_m_abs_ROI,
     tau_ROI=tau_ROI,
@@ -197,26 +246,45 @@ plot_absorption_coefficient(
     kappa_1_cm_sq_fit=0.01 * kappa_1_m_sq_fit,
 )
 
+plot_absorption_coefficient_from_n_i(
+    radius_for_integration=r_t_K,
+    kappa_1_cm_from_n_i=0.01 * kappa_1_m_from_n_i,
+)
+
 plot_T_K_and_interpolated_kappa(
     r_t_K=r_t_K,
     t_K=t_K,
     d_T_K=d_T_K,
-    kappa_intepolated=kappa_intepolated_1_m * 0.01,
+    kappa_intepolated=kappa_intepolated_to_R_T_K_1_m * 0.01,
     radius_for_integration=radius_for_integration,
     kappa_1_cm_sq_fit=kappa_1_m_sq_fit * 0.01,
 )
 
-plot_Doplers_broadening(r_t_K=r_t_K, d_lambda_Dopler_m=d_lambda_Doplers_m)
+plot_Doplers_broadening(
+    r_t_K=r_t_K,
+    d_lambda_Dopler_m=d_lambda_Doplers_m,
+    d_lambda_Doplers_uncertainty_m=d_lambda_Doplers_uncertainty_m,
+)
 
-plot_population_number_density(r_t_K=r_t_K, n_i_m_3=n_i_m_3)
+plot_population_number_density(
+    r_t_K=r_t_K, n_i_m_3=n_i_m_3, n_i_m_3_error=n_i_m_3_error
+)
 
-plot_number_density(r_t_K=r_t_K, n_m_3=n_m_3, dn=dn_m_3)
+plot_number_density(r_t_K=r_t_K, n_m_3=n_m_3, dn=n_m_3_error)
 
-plot_population_and_number_density(r_t_K, n_i_m_3=n_i_m_3, n_m_3=n_m_3)
+plot_population_and_number_density(
+    r_t_K=r_t_K,
+    n_i_m_3=n_i_m_3,
+    n_i_m_3_error=n_i_m_3_error,
+    n_m_3=n_m_3,
+    n_m_3_error=n_m_3_error,
+)
+
 
 if param["show_plots_flag"]:
     plt.show(block=False)
     input("Press any key to close all plots...")
     plt.close("all")
+
 else:
     print("Calculations have been finished!")

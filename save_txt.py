@@ -33,16 +33,3 @@ def save_arrays_to_txt(filepath, arrays, column_names):
 
     np.savetxt(filepath, data, header=header, comments='', fmt="%.18e")
 
-# def save_arrays_to_txt(file_handle, arrays, column_names):
-#     """
-#     Save multiple 1D arrays into an open .txt file with column headers for easy import into Origin.
-#     """
-#     if not all(len(arr) == len(arrays[0]) for arr in arrays):
-#         raise ValueError("All arrays must have the same length.")
-
-#     header = "# " + "\t".join(column_names) + "\n"
-#     file_handle.write(header)
-
-#     for row in zip(*arrays):
-#         line = "\t".join(f"{val:.18e}" for val in row)
-#         file_handle.write(line + "\n")

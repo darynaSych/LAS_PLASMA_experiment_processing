@@ -14,7 +14,6 @@ y_crssctn_absorbtion=2460
 y_crssctn_gt=2400
 
 # SET IMAGE PARAMETERS
-x_min_electrode=2100  # Left limit of the electrode
 x_max_electrode=4230  # Right limit of the electrode
 y_min_electrode=1370  # Lower limit of the electrode
 y_max_electrode=3320  # Upper limit of the electrode
@@ -27,7 +26,7 @@ number_of_points_for_integration=30 # Кількість точок для ін�
 
 #define path to files and folders
 foldername_root = Image Processing - diploma/12-05-2025
-filename_img_absorption=_DSC3578.NEF
+filename_img_absorption=_DSC3580.NEF
 filename_img_gt=_DSC3505.NEF
 
 # Define files for numerical processing
